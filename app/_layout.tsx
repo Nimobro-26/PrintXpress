@@ -1,0 +1,23 @@
+// Root Layout - Print-Xpress
+import { Stack } from 'expo-router';
+import { AuthProvider } from '../contexts/AuthContext';
+import { PrintProvider } from '../contexts/PrintContext';
+
+export default function RootLayout() {
+  return (
+    <AuthProvider>
+      <PrintProvider>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="auth" />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="upload" />
+          <Stack.Screen name="settings" />
+          <Stack.Screen name="payment" />
+          <Stack.Screen name="otp" />
+          <Stack.Screen name="success" />
+        </Stack>
+      </PrintProvider>
+    </AuthProvider>
+  );
+}
