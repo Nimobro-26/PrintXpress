@@ -41,7 +41,7 @@ export default function HomeScreen() {
           <View style={styles.logoContainer}>
             <MaterialIcons name="print" size={32} color={theme.primary} />
           </View>
-          <Pressable style={styles.profileButton}>
+          <Pressable style={styles.profileButton} onPress={() => router.push('/(tabs)/profile')}>
             <MaterialIcons name="person" size={24} color={theme.textSecondary} />
           </Pressable>
         </View>

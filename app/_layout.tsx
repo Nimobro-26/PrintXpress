@@ -16,6 +16,13 @@ export default function RootLayout() {
           <Stack.Screen name="payment" />
           <Stack.Screen name="otp" />
           <Stack.Screen name="success" />
+          <Stack.Screen name="profile-settings" />
+          <Stack.Screen name="notifications" />
+          <Stack.Screen name="print-settings" />
+          <Stack.Screen name="payment-methods" />
+          <Stack.Screen name="help" />
+          <Stack.Screen name="feedback" />
+          <Stack.Screen name="about" />
         </Stack>
       </PrintProvider>
     </AuthProvider>

@@ -33,24 +33,24 @@ export default function ProfileScreen() {
     {
       title: 'Account',
       items: [
-        { icon: 'person', label: 'Profile Settings', onPress: () => {} },
+        { icon: 'person', label: 'Profile Settings', onPress: () => router.push('/profile-settings') },
         { icon: 'phone', label: 'Phone Number', value: user?.phoneNumber },
       ],
     },
     {
       title: 'Preferences',
       items: [
-        { icon: 'notifications', label: 'Notifications', onPress: () => {} },
-        { icon: 'print', label: 'Default Print Settings', onPress: () => {} },
-        { icon: 'payment', label: 'Payment Methods', onPress: () => {} },
+        { icon: 'notifications', label: 'Notifications', onPress: () => router.push('/notifications') },
+        { icon: 'print', label: 'Default Print Settings', onPress: () => router.push('/print-settings') },
+        { icon: 'payment', label: 'Payment Methods', onPress: () => router.push('/payment-methods') },
       ],
     },
     {
       title: 'Support',
       items: [
-        { icon: 'help', label: 'Help & FAQ', onPress: () => {} },
-        { icon: 'feedback', label: 'Send Feedback', onPress: () => {} },
-        { icon: 'info', label: 'About', onPress: () => {} },
+        { icon: 'help', label: 'Help & FAQ', onPress: () => router.push('/help') },
+        { icon: 'feedback', label: 'Send Feedback', onPress: () => router.push('/feedback') },
+        { icon: 'info', label: 'About', onPress: () => router.push('/about') },
       ],
     },
   ];
