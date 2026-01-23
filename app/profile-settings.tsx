@@ -1,9 +1,11 @@
 // Profile Settings Screen
 import { useState } from 'react';
-import { View, Text, TextInput, Pressable, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, TextInput, Pressable, StyleSheet, ScrollView, Alert, ActionSheetIOS, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
+import * as ImagePicker from 'expo-image-picker';
 import { theme } from '../constants/theme';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -13,10 +15,74 @@ export default function ProfileSettingsScreen() {
   const { user } = useAuth();
   const [displayName, setDisplayName] = useState(user?.displayName || '');
   const [email, setEmail] = useState('');
+  const [photoUri, setPhotoUri] = useState<string | null>(null);
 
   const handleSave = () => {
     Alert.alert('Success', 'Profile updated successfully');
     router.back();
+  };
+
+  const pickImage = async (source: 'camera' | 'gallery') => {
+    try {
+      let result;
+      
+      if (source === 'camera') {
+        const permission = await ImagePicker.requestCameraPermissionsAsync();
+        if (!permission.granted) {
+          Alert.alert('Permission Required', 'Camera access is needed to take photos');
+          return;
+        }
+        result = await ImagePicker.launchCameraAsync({
+          allowsEditing: true,
+          aspect: [1, 1],
+          quality: 0.8,
+        });
+      } else {
+        const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!permission.granted) {
+          Alert.alert('Permission Required', 'Photo library access is needed to select photos');
+          return;
+        }
+        result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [1, 1],
+          quality: 0.8,
+        });
+      }
+
+      if (!result.canceled && result.assets[0]) {
+        setPhotoUri(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Error', 'Failed to select photo');
+    }
+  };
+
+  const handleChangePhoto = () => {
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ['Cancel', 'Take Photo', 'Choose from Library'],
+          cancelButtonIndex: 0,
+        },
+        (buttonIndex) => {
+          if (buttonIndex === 1) pickImage('camera');
+          if (buttonIndex === 2) pickImage('gallery');
+        }
+      );
+    } else {
+      Alert.alert(
+        'Change Photo',
+        'Choose an option',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Take Photo', onPress: () => pickImage('camera') },
+          { text: 'Choose from Library', onPress: () => pickImage('gallery') },
+        ]
+      );
+    }
   };
 
   return (
@@ -39,9 +105,14 @@ export default function ProfileSettingsScreen() {
         {/* Avatar */}
         <View style={styles.avatarSection}>
           <View style={styles.avatar}>
-            <MaterialIcons name="person" size={48} color={theme.textSecondary} />
+            {photoUri ? (
+              <Image source={{ uri: photoUri }} style={styles.avatarImage} contentFit="cover" />
+            ) : (
+              <MaterialIcons name="person" size={48} color={theme.textSecondary} />
+            )}
           </View>
-          <Pressable style={styles.changePhotoButton}>
+          <Pressable style={styles.changePhotoButton} onPress={handleChangePhoto}>
+            <MaterialIcons name="photo-camera" size={16} color={theme.primary} />
             <Text style={styles.changePhotoText}>Change Photo</Text>
           </Pressable>
         </View>
@@ -128,10 +199,18 @@ const styles = StyleSheet.create({
     borderWidth: 4,
     borderColor: '#FFF',
     ...theme.shadow.medium,
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
   },
   changePhotoButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 8,
     paddingHorizontal: 16,
+    gap: 6,
   },
   changePhotoText: {
     fontSize: 14,
