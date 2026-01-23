@@ -154,9 +154,21 @@ export default function AuthScreen() {
           {step === 'otp' && (
             <View style={styles.form}>
               <View style={styles.otpHeader}>
-                <Text style={styles.otpInfo}>Enter the 4-digit code sent to</Text>
+                <View style={styles.demoNotice}>
+                  <MaterialIcons name="info" size={20} color={theme.secondary} />
+                  <Text style={styles.demoText}>DEMO MODE - No SMS sent</Text>
+                </View>
+                <Text style={styles.otpInfo}>Enter any 4-digit code to continue</Text>
                 <Text style={styles.otpPhone}>+91 {phoneNumber}</Text>
-                <Text style={styles.otpHint}>Use any 4-digit code for demo</Text>
+                <Pressable 
+                  style={styles.quickFillButton}
+                  onPress={() => {
+                    setOtp(['1', '2', '3', '4']);
+                    setTimeout(() => handleVerifyOTP(), 300);
+                  }}
+                >
+                  <Text style={styles.quickFillText}>Quick Fill: 1234</Text>
+                </Pressable>
               </View>
 
               <View style={styles.otpContainer}>
@@ -335,10 +347,34 @@ const styles = StyleSheet.create({
     color: theme.textPrimary,
     marginBottom: 4,
   },
-  otpHint: {
-    fontSize: 12,
-    color: theme.secondary,
-    fontStyle: 'italic',
+  demoNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E8F5E9',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    gap: 8,
+    marginBottom: 16,
+  },
+  demoText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#2E7D32',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  quickFillButton: {
+    marginTop: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: theme.secondary,
+    borderRadius: 8,
+  },
+  quickFillText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#FFF',
   },
   otpContainer: {
     flexDirection: 'row',
