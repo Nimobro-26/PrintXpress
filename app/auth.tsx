@@ -39,6 +39,12 @@ export default function AuthScreen() {
 
   const handleOTPChange = (value: string, index: number) => {
     setError('');
+    
+    // Only allow numbers
+    if (value && !/^[0-9]$/.test(value)) {
+      return;
+    }
+    
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
@@ -155,17 +161,26 @@ export default function AuthScreen() {
 
               <View style={styles.otpContainer}>
                 {[0, 1, 2, 3].map((index) => (
-                  <TextInput
+                  <Pressable
                     key={index}
-                    ref={(ref) => (otpInputs.current[index] = ref)}
-                    style={styles.otpInput}
-                    maxLength={1}
-                    keyboardType="number-pad"
-                    value={otp[index]}
-                    onChangeText={(value) => handleOTPChange(value, index)}
-                    onKeyPress={(e) => handleOTPKeyPress(e, index)}
-                    editable={!loading}
-                  />
+                    onPress={() => otpInputs.current[index]?.focus()}
+                  >
+                    <TextInput
+                      ref={(ref) => (otpInputs.current[index] = ref)}
+                      style={[
+                        styles.otpInput,
+                        otp[index] && styles.otpInputFilled,
+                      ]}
+                      maxLength={1}
+                      keyboardType="number-pad"
+                      value={otp[index]}
+                      onChangeText={(value) => handleOTPChange(value, index)}
+                      onKeyPress={(e) => handleOTPKeyPress(e, index)}
+                      editable={!loading}
+                      selectTextOnFocus
+                      autoComplete="off"
+                    />
+                  </Pressable>
                 ))}
               </View>
 
@@ -341,6 +356,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
     color: theme.textPrimary,
+  },
+  otpInputFilled: {
+    borderColor: theme.primary,
+    backgroundColor: '#FFF',
   },
   resendButton: {
     paddingVertical: 12,
