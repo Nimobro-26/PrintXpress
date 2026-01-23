@@ -1,8 +1,11 @@
 // Upload Document Screen
-import { View, Text, Pressable, StyleSheet, Alert } from 'react-native';
+import { useState } from 'react';
+import { View, Text, Pressable, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
+import * as DocumentPicker from 'expo-document-picker';
+import * as ImagePicker from 'expo-image-picker';
 import { theme } from '../constants/theme';
 import { usePrint } from '../contexts/PrintContext';
 
@@ -10,22 +13,132 @@ export default function UploadScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { uploadDocument, loading } = usePrint();
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleUpload = async (source: string) => {
+  const handlePhoneStorage = async () => {
     try {
-      // Mock file selection
-      const mockFile = {
-        name: 'Assignment_Final_V2.pdf',
-        size: 2.4,
-        uri: 'mock://file.pdf',
-        type: 'pdf',
-        pages: 12,
+      setIsProcessing(true);
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'],
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled) {
+        setIsProcessing(false);
+        return;
+      }
+
+      const file = result.assets[0];
+      const fileData = {
+        name: file.name,
+        size: file.size ? file.size / (1024 * 1024) : 0,
+        uri: file.uri,
+        type: file.mimeType?.includes('pdf') ? 'pdf' : 'doc',
+        pages: 12, // Mock page count
       };
 
-      await uploadDocument(mockFile);
+      await uploadDocument(fileData);
+      setIsProcessing(false);
       router.push('/settings');
     } catch (error) {
-      Alert.alert('Error', 'Failed to upload document. Please try again.');
+      setIsProcessing(false);
+      Alert.alert('Error', 'Failed to select document. Please try again.');
+    }
+  };
+
+  const handleCameraScan = async () => {
+    try {
+      setIsProcessing(true);
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
+      
+      if (!permission.granted) {
+        setIsProcessing(false);
+        Alert.alert('Permission Required', 'Camera access is needed to scan documents');
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        quality: 1,
+      });
+
+      if (result.canceled) {
+        setIsProcessing(false);
+        return;
+      }
+
+      const image = result.assets[0];
+      const fileData = {
+        name: `Scanned_${new Date().getTime()}.jpg`,
+        size: image.fileSize ? image.fileSize / (1024 * 1024) : 0.5,
+        uri: image.uri,
+        type: 'image',
+        pages: 1,
+      };
+
+      await uploadDocument(fileData);
+      setIsProcessing(false);
+      router.push('/settings');
+    } catch (error) {
+      setIsProcessing(false);
+      Alert.alert('Error', 'Failed to scan document. Please try again.');
+    }
+  };
+
+  const handleCloudDrive = async () => {
+    setIsProcessing(true);
+    // Simulate cloud drive selection
+    setTimeout(() => {
+      setIsProcessing(false);
+      Alert.alert(
+        'Cloud Drive',
+        'Select cloud storage provider:',
+        [
+          {
+            text: 'Google Drive',
+            onPress: async () => {
+              setIsProcessing(true);
+              // Mock cloud file
+              const fileData = {
+                name: 'Document_from_Drive.pdf',
+                size: 1.8,
+                uri: 'cloud://drive/file.pdf',
+                type: 'pdf',
+                pages: 8,
+              };
+              await uploadDocument(fileData);
+              setIsProcessing(false);
+              router.push('/settings');
+            },
+          },
+          {
+            text: 'Dropbox',
+            onPress: async () => {
+              Alert.alert('Coming Soon', 'Dropbox integration will be available soon');
+            },
+          },
+          { text: 'Cancel', style: 'cancel' },
+        ]
+      );
+    }, 300);
+  };
+
+  const handleUpload = async (source: string) => {
+    if (isProcessing || loading) return;
+
+    switch (source) {
+      case 'phone':
+        await handlePhoneStorage();
+        break;
+      case 'camera':
+        await handleCameraScan();
+        break;
+      case 'cloud':
+        await handleCloudDrive();
+        break;
+      default:
+        Alert.alert('Error', 'Unknown upload source');
     }
   };
 
@@ -89,9 +202,9 @@ export default function UploadScreen() {
           {uploadOptions.map((option) => (
             <Pressable
               key={option.id}
-              style={styles.optionCard}
+              style={[styles.optionCard, (loading || isProcessing) && styles.optionCardDisabled]}
               onPress={() => handleUpload(option.id)}
-              disabled={loading}
+              disabled={loading || isProcessing}
             >
               <View style={[styles.optionIcon, { backgroundColor: option.bgColor }]}>
                 <MaterialIcons name={option.icon as any} size={32} color={option.color} />
@@ -100,7 +213,11 @@ export default function UploadScreen() {
                 <Text style={styles.optionTitle}>{option.title}</Text>
                 <Text style={styles.optionDescription}>{option.description}</Text>
               </View>
-              <MaterialIcons name="chevron-right" size={24} color={theme.textTertiary} />
+              {(loading || isProcessing) ? (
+                <ActivityIndicator size="small" color={theme.primary} />
+              ) : (
+                <MaterialIcons name="chevron-right" size={24} color={theme.textTertiary} />
+              )}
             </Pressable>
           ))}
         </View>
@@ -182,6 +299,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.border,
     ...theme.shadow.small,
+  },
+  optionCardDisabled: {
+    opacity: 0.6,
   },
   optionIcon: {
     width: 56,
