@@ -23,6 +23,7 @@ export default function RootLayout() {
           <Stack.Screen name="help" />
           <Stack.Screen name="feedback" />
           <Stack.Screen name="about" />
+          <Stack.Screen name="delivery" />
         </Stack>
       </PrintProvider>
     </AuthProvider>
