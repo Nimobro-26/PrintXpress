@@ -24,6 +24,7 @@ export default function RootLayout() {
           <Stack.Screen name="feedback" />
           <Stack.Screen name="about" />
           <Stack.Screen name="delivery" />
+          <Stack.Screen name="delivery-tracking" />
         </Stack>
       </PrintProvider>
     </AuthProvider>

@@ -33,7 +33,8 @@ export default function DeliveryScreen() {
   };
 
   const handleConfirm = () => {
-    router.push('/payment');
+    // Simulate payment and move to tracking
+    router.push('/delivery-tracking');
   };
 
   return (
