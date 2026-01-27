@@ -4,9 +4,20 @@ import { View, Text, Pressable, StyleSheet, ScrollView, Alert, Platform, Linking
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Image } from 'expo-image';
 import { theme } from '../constants/theme';
+
+// Conditional import for native platforms only
+let MapView: any = null;
+let Marker: any = null;
+let PROVIDER_GOOGLE: any = null;
+
+if (Platform.OS !== 'web') {
+  const maps = require('react-native-maps');
+  MapView = maps.default;
+  Marker = maps.Marker;
+  PROVIDER_GOOGLE = maps.PROVIDER_GOOGLE;
+}
 
 type DeliveryStatus = 'confirmed' | 'picked_up' | 'out_for_delivery' | 'nearby' | 'delivered';
 
@@ -117,30 +128,50 @@ export default function DeliveryTrackingScreen() {
       >
         {/* Map */}
         <View style={styles.mapContainer}>
-          <MapView
-            provider={PROVIDER_GOOGLE}
-            style={styles.map}
-            initialRegion={{
-              latitude: (deliveryPartnerLocation.latitude + userLocation.latitude) / 2,
-              longitude: (deliveryPartnerLocation.longitude + userLocation.longitude) / 2,
-              latitudeDelta: 0.02,
-              longitudeDelta: 0.02,
-            }}
-          >
-            {/* Delivery Partner Marker */}
-            <Marker coordinate={deliveryPartnerLocation}>
-              <View style={styles.deliveryMarker}>
+          {Platform.OS === 'web' ? (
+            // Web fallback: Static map placeholder
+            <View style={styles.webMapPlaceholder}>
+              <View style={styles.webMapContent}>
+                <MaterialIcons name="map" size={64} color={theme.textTertiary} />
+                <Text style={styles.webMapText}>Live Map View</Text>
+                <Text style={styles.webMapSubtext}>Available on mobile app</Text>
+              </View>
+              
+              {/* Simulated markers for web */}
+              <View style={[styles.deliveryMarker, styles.webDeliveryMarker]}>
                 <MaterialIcons name="directions-bike" size={20} color="#FFF" />
               </View>
-            </Marker>
-
-            {/* User Location Marker */}
-            <Marker coordinate={userLocation}>
-              <View style={styles.userMarker}>
+              <View style={[styles.userMarker, styles.webUserMarker]}>
                 <MaterialIcons name="home" size={20} color="#FFF" />
               </View>
-            </Marker>
-          </MapView>
+            </View>
+          ) : (
+            // Native: Real map with live tracking
+            <MapView
+              provider={PROVIDER_GOOGLE}
+              style={styles.map}
+              initialRegion={{
+                latitude: (deliveryPartnerLocation.latitude + userLocation.latitude) / 2,
+                longitude: (deliveryPartnerLocation.longitude + userLocation.longitude) / 2,
+                latitudeDelta: 0.02,
+                longitudeDelta: 0.02,
+              }}
+            >
+              {/* Delivery Partner Marker */}
+              <Marker coordinate={deliveryPartnerLocation}>
+                <View style={styles.deliveryMarker}>
+                  <MaterialIcons name="directions-bike" size={20} color="#FFF" />
+                </View>
+              </Marker>
+
+              {/* User Location Marker */}
+              <Marker coordinate={userLocation}>
+                <View style={styles.userMarker}>
+                  <MaterialIcons name="home" size={20} color="#FFF" />
+                </View>
+              </Marker>
+            </MapView>
+          )}
 
           {/* ETA Card Overlay */}
           <View style={styles.etaCard}>
@@ -327,6 +358,35 @@ const styles = StyleSheet.create({
   },
   map: {
     ...StyleSheet.absoluteFillObject,
+  },
+  webMapPlaceholder: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  webMapContent: {
+    alignItems: 'center',
+    gap: 8,
+  },
+  webMapText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: theme.textPrimary,
+  },
+  webMapSubtext: {
+    fontSize: 14,
+    color: theme.textSecondary,
+  },
+  webDeliveryMarker: {
+    position: 'absolute',
+    top: 80,
+    left: 100,
+  },
+  webUserMarker: {
+    position: 'absolute',
+    bottom: 80,
+    right: 100,
   },
   deliveryMarker: {
     width: 44,
