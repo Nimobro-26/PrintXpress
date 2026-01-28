@@ -13,7 +13,7 @@ type PageSize = 'A4' | 'A5' | 'Letter' | 'Legal';
 export default function SettingsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { currentDocument } = usePrint();
+  const { currentJob, updatePrintSettings } = usePrint();
   
   const [colorMode, setColorMode] = useState<ColorMode>('bw');
   const [pageSize, setPageSize] = useState<PageSize>('A4');
@@ -21,7 +21,7 @@ export default function SettingsScreen() {
   const [pageRange, setPageRange] = useState('');
   const [highQuality, setHighQuality] = useState(true);
 
-  if (!currentDocument) {
+  if (!currentJob) {
     return (
       <SafeAreaView edges={['top']} style={styles.container}>
         <View style={styles.emptyState}>
@@ -38,10 +38,17 @@ export default function SettingsScreen() {
   // Calculate price
   const basePrice = colorMode === 'bw' ? 0.10 : 0.30;
   const qualityMultiplier = highQuality ? 1.2 : 1.0;
-  const pagesToPrint = pageRange ? 5 : currentDocument.pages; // Simplified calculation
+  const pagesToPrint = pageRange ? 5 : currentJob.totalPages; // Simplified calculation
   const totalPrice = (basePrice * pagesToPrint * copies * qualityMultiplier).toFixed(2);
 
   const handleProceed = () => {
+    // Update print settings in context
+    updatePrintSettings({
+      colorMode: colorMode === 'bw' ? 'bw' : 'color',
+      paperSize: pageSize.toLowerCase() as any,
+      copies,
+      highQuality,
+    });
     router.push('/delivery');
   };
 
@@ -67,17 +74,17 @@ export default function SettingsScreen() {
         <View style={styles.documentCard}>
           <View style={styles.documentIcon}>
             <MaterialIcons 
-              name={currentDocument.type === 'pdf' ? 'picture-as-pdf' : 'description'} 
+              name={currentJob.fileType === 'pdf' ? 'picture-as-pdf' : 'description'} 
               size={24} 
               color={theme.primary} 
             />
           </View>
           <View style={styles.documentInfo}>
             <Text style={styles.documentName} numberOfLines={1}>
-              {currentDocument.name}
+              {currentJob.fileName}
             </Text>
             <Text style={styles.documentDetails}>
-              {currentDocument.pages} pages • {currentDocument.size.toFixed(1)} MB
+              {currentJob.totalPages} pages • {currentJob.fileSize.toFixed(1)} MB
             </Text>
           </View>
         </View>

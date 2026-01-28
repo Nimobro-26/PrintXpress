@@ -12,7 +12,7 @@ type PackagingType = 'standard' | 'premium';
 export default function DeliveryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { currentDocument } = usePrint();
+  const { currentJob } = usePrint();
   
   const [selectedPackaging, setSelectedPackaging] = useState<PackagingType>('standard');
   const [deliveryAddress, setDeliveryAddress] = useState({
@@ -22,8 +22,8 @@ export default function DeliveryScreen() {
   });
 
   // Calculate charges
-  const printingCost = currentDocument ? (currentDocument.pages || 12) * 0.10 : 4.50;
-  const filesCount = 3;
+  const printingCost = currentJob ? currentJob.totalCost : 4.50;
+  const filesCount = currentJob ? currentJob.copies : 1;
   const deliveryFee = filesCount >= 5 ? 0 : deliveryAddress.distance * 0.80; // $0.80 per km
   const packagingCost = selectedPackaging === 'premium' ? 1.50 : 0;
   const totalAmount = printingCost + deliveryFee + packagingCost;
