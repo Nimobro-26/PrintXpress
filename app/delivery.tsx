@@ -1,6 +1,6 @@
-// Print Delivery Options Screen
+// Print Delivery Options Screen - Enhanced with Address Management
 import { useState } from 'react';
-import { View, Text, Pressable, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -18,18 +18,22 @@ export default function DeliveryScreen() {
   const [deliveryAddress, setDeliveryAddress] = useState({
     label: 'Home Address',
     address: '123 Sunshine Blvd, Los Angeles, CA 90001',
-    distance: 2.5, // km
+    distance: 2.5, // km from nearest ATM
   });
 
-  // Calculate charges
+  // Calculate charges with distance-based pricing
   const printingCost = currentJob ? currentJob.totalCost : 4.50;
   const filesCount = currentJob ? currentJob.copies : 1;
+  
+  // Distance-based delivery calculation
   const deliveryFee = filesCount >= 5 ? 0 : deliveryAddress.distance * 0.80; // $0.80 per km
+  const estimatedTime = Math.ceil(deliveryAddress.distance * 3); // 3 mins per km
+  
   const packagingCost = selectedPackaging === 'premium' ? 1.50 : 0;
   const totalAmount = printingCost + deliveryFee + packagingCost;
 
   const handleChangeAddress = () => {
-    Alert.alert('Change Address', 'Address management coming soon');
+    router.push('/address-selection');
   };
 
   const handleConfirm = () => {
@@ -78,13 +82,24 @@ export default function DeliveryScreen() {
               <View style={styles.addressHeader}>
                 <Text style={styles.addressLabel}>{deliveryAddress.label}</Text>
                 <View style={styles.distanceBadge}>
-                  <Text style={styles.distanceText}>{deliveryAddress.distance}km</Text>
+                  <Text style={styles.distanceText}>{deliveryAddress.distance}km from ATM</Text>
                 </View>
               </View>
               <Text style={styles.addressText}>{deliveryAddress.address}</Text>
+              <View style={styles.addressMeta}>
+                <View style={styles.metaItem}>
+                  <MaterialIcons name="schedule" size={14} color={theme.textSecondary} />
+                  <Text style={styles.metaText}>~{estimatedTime} mins</Text>
+                </View>
+                <View style={styles.metaDivider} />
+                <View style={styles.metaItem}>
+                  <MaterialIcons name="local-shipping" size={14} color={theme.textSecondary} />
+                  <Text style={styles.metaText}>${deliveryFee.toFixed(2)}</Text>
+                </View>
+              </View>
             </View>
             <Pressable style={styles.changeButton} onPress={handleChangeAddress}>
-              <Text style={styles.changeButtonText}>Change</Text>
+              <MaterialIcons name="edit" size={18} color="#1565C0" />
             </Pressable>
           </View>
         </View>
@@ -315,17 +330,35 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: theme.textSecondary,
     lineHeight: 18,
+    marginBottom: 8,
+  },
+  addressMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  metaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  metaText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: theme.textSecondary,
+  },
+  metaDivider: {
+    width: 1,
+    height: 12,
+    backgroundColor: theme.border,
   },
   changeButton: {
-    backgroundColor: '#E3F2FD',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    width: 40,
+    height: 40,
     borderRadius: theme.borderRadius.medium,
-  },
-  changeButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1565C0',
+    backgroundColor: '#E3F2FD',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   packagingCard: {
     flexDirection: 'row',
