@@ -18,6 +18,10 @@ export default function HomeScreen() {
     router.push('/upload');
   };
 
+  const handleViewMap = () => {
+    router.push('/(tabs)/find-atm');
+  };
+
   const formatDate = (date: Date) => {
     const now = new Date();
     const diff = now.getTime() - date.getTime();
@@ -81,7 +85,7 @@ export default function HomeScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Nearest Print-Xpress</Text>
-            <Pressable>
+            <Pressable onPress={handleViewMap}>
               <Text style={styles.viewAll}>View Map</Text>
             </Pressable>
           </View>
@@ -100,7 +104,7 @@ export default function HomeScreen() {
                   <Text style={styles.atmDistance}>0.4 miles away • Open 24/7</Text>
                 </View>
               </View>
-              <Pressable style={styles.directionsButton}>
+              <Pressable style={styles.directionsButton} onPress={handleViewMap}>
                 <MaterialIcons name="directions" size={20} color={theme.secondary} />
               </Pressable>
             </View>
