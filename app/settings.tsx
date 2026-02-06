@@ -1,4 +1,4 @@
-// Print Configuration Screen - Fully Interactive Settings
+// Print Configuration Screen - Fixed Custom Range Implementation
 import { useState, useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView, TextInput, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -30,57 +30,114 @@ export default function SettingsScreen() {
   const [pageRangeMode, setPageRangeMode] = useState<PageRangeMode>('all');
   const [customPageRange, setCustomPageRange] = useState('');
   const [pageRangeError, setPageRangeError] = useState('');
+  const [validatedPageCount, setValidatedPageCount] = useState(0);
   const [highQuality, setHighQuality] = useState(true);
 
-  // Calculate pages to print based on range
-  const calculatePagesToPrint = (): number => {
+  // Pure function - no state updates
+  const parsePageRange = (rangeString: string, totalPages: number): { pages: number; error: string } => {
+    if (!rangeString.trim()) {
+      return { pages: 0, error: 'Please enter a page range' };
+    }
+
+    try {
+      const ranges = rangeString.split(',').map(r => r.trim()).filter(r => r);
+      let totalPagesCount = 0;
+      const seenPages = new Set<number>();
+
+      for (const range of ranges) {
+        // Check for invalid characters
+        if (!/^[\d\s-]+$/.test(range)) {
+          return { pages: 0, error: 'Only numbers, hyphens, and commas allowed' };
+        }
+
+        if (range.includes('-')) {
+          // Range format: "1-5"
+          const parts = range.split('-');
+          if (parts.length !== 2) {
+            return { pages: 0, error: `Invalid range format: ${range}` };
+          }
+
+          const start = parseInt(parts[0].trim());
+          const end = parseInt(parts[1].trim());
+
+          if (isNaN(start) || isNaN(end)) {
+            return { pages: 0, error: `Invalid numbers in range: ${range}` };
+          }
+
+          if (start < 1) {
+            return { pages: 0, error: 'Page numbers must start from 1' };
+          }
+
+          if (end > totalPages) {
+            return { pages: 0, error: `Page ${end} exceeds document pages (${totalPages})` };
+          }
+
+          if (start > end) {
+            return { pages: 0, error: `Invalid range: ${start}-${end} (start > end)` };
+          }
+
+          // Add pages from range
+          for (let i = start; i <= end; i++) {
+            seenPages.add(i);
+          }
+        } else {
+          // Single page
+          const page = parseInt(range.trim());
+
+          if (isNaN(page)) {
+            return { pages: 0, error: `Invalid page number: ${range}` };
+          }
+
+          if (page < 1) {
+            return { pages: 0, error: 'Page numbers must be at least 1' };
+          }
+
+          if (page > totalPages) {
+            return { pages: 0, error: `Page ${page} exceeds document pages (${totalPages})` };
+          }
+
+          seenPages.add(page);
+        }
+      }
+
+      return { pages: seenPages.size, error: '' };
+    } catch (error) {
+      console.error('Page range parsing error:', error);
+      return { pages: 0, error: 'Invalid format. Use: 1-5, 7, 10-12' };
+    }
+  };
+
+  // Validate and update page count when custom range changes
+  useEffect(() => {
+    if (!currentJob) return;
+
+    if (pageRangeMode === 'custom') {
+      const result = parsePageRange(customPageRange, currentJob.totalPages);
+      setPageRangeError(result.error);
+      setValidatedPageCount(result.pages);
+    } else {
+      setPageRangeError('');
+      setValidatedPageCount(currentJob.totalPages);
+    }
+  }, [customPageRange, pageRangeMode, currentJob]);
+
+  // Calculate pages to print
+  const getPagesToPrint = (): number => {
     if (!currentJob) return 0;
     
     if (pageRangeMode === 'all') {
       return currentJob.totalPages;
     }
 
-    // Parse custom range (e.g., "1-5, 7, 9-12")
-    if (!customPageRange.trim()) {
-      setPageRangeError('Enter page range');
-      return 0;
-    }
-
-    try {
-      const ranges = customPageRange.split(',').map(r => r.trim());
-      let totalPages = 0;
-      
-      for (const range of ranges) {
-        if (range.includes('-')) {
-          const [start, end] = range.split('-').map(n => parseInt(n.trim()));
-          if (isNaN(start) || isNaN(end) || start < 1 || end > currentJob.totalPages || start > end) {
-            setPageRangeError(`Invalid range: ${range}`);
-            return 0;
-          }
-          totalPages += (end - start + 1);
-        } else {
-          const page = parseInt(range);
-          if (isNaN(page) || page < 1 || page > currentJob.totalPages) {
-            setPageRangeError(`Invalid page: ${range}`);
-            return 0;
-          }
-          totalPages += 1;
-        }
-      }
-      
-      setPageRangeError('');
-      return totalPages;
-    } catch (error) {
-      setPageRangeError('Invalid format');
-      return 0;
-    }
+    // For custom mode, use validated count
+    return validatedPageCount;
   };
 
   // Calculate price in real-time
   const calculatePrice = () => {
     if (!currentJob) return { total: 0, breakdown: { base: 0, size: 0, quality: 0, copies: 0 } };
     
-    const pagesToPrint = calculatePagesToPrint();
+    const pagesToPrint = getPagesToPrint();
     if (pagesToPrint === 0) return { total: 0, breakdown: { base: 0, size: 0, quality: 0, copies: 0 } };
 
     // Base price per page
@@ -131,8 +188,27 @@ export default function SettingsScreen() {
     );
   }
 
+  const handlePageRangeModeChange = (mode: PageRangeMode) => {
+    setPageRangeMode(mode);
+    if (mode === 'all') {
+      setCustomPageRange('');
+      setPageRangeError('');
+      setValidatedPageCount(currentJob.totalPages);
+    }
+  };
+
+  const handleCustomRangeChange = (text: string) => {
+    setCustomPageRange(text);
+    // Validation happens in useEffect
+  };
+
   const handleProceed = () => {
-    if (pageRangeMode === 'custom' && pageRangeError) {
+    // Final validation before proceeding
+    if (pageRangeMode === 'custom' && (pageRangeError || validatedPageCount === 0)) {
+      return;
+    }
+
+    if (priceInfo.total === 0) {
       return;
     }
 
@@ -144,6 +220,8 @@ export default function SettingsScreen() {
     });
     router.push('/delivery');
   };
+
+  const isValidForProceed = priceInfo.total > 0 && (pageRangeMode === 'all' || (pageRangeMode === 'custom' && !pageRangeError && validatedPageCount > 0));
 
   return (
     <SafeAreaView edges={['top']} style={styles.container}>
@@ -254,10 +332,7 @@ export default function SettingsScreen() {
                 styles.rangeToggleButton,
                 pageRangeMode === 'all' && styles.rangeToggleButtonActive,
               ]}
-              onPress={() => {
-                setPageRangeMode('all');
-                setPageRangeError('');
-              }}
+              onPress={() => handlePageRangeModeChange('all')}
             >
               <Text style={[
                 styles.rangeToggleText,
@@ -271,7 +346,7 @@ export default function SettingsScreen() {
                 styles.rangeToggleButton,
                 pageRangeMode === 'custom' && styles.rangeToggleButtonActive,
               ]}
-              onPress={() => setPageRangeMode('custom')}
+              onPress={() => handlePageRangeModeChange('custom')}
             >
               <Text style={[
                 styles.rangeToggleText,
@@ -282,32 +357,66 @@ export default function SettingsScreen() {
             </Pressable>
           </View>
 
+          {/* Custom Range Input - Accordion Style */}
           {pageRangeMode === 'custom' && (
             <View style={styles.customRangeContainer}>
-              <TextInput
-                style={[
-                  styles.customRangeInput,
-                  pageRangeError && styles.customRangeInputError,
-                ]}
-                placeholder="e.g., 1-5, 7, 9-12"
-                placeholderTextColor={theme.textTertiary}
-                value={customPageRange}
-                onChangeText={(text) => {
-                  setCustomPageRange(text);
-                  setPageRangeError('');
-                }}
-                keyboardType="default"
-              />
-              {pageRangeError ? (
-                <View style={styles.errorContainer}>
-                  <MaterialIcons name="error-outline" size={14} color="#EF4444" />
-                  <Text style={styles.errorText}>{pageRangeError}</Text>
+              <View style={styles.customRangeCard}>
+                <View style={styles.customRangeHeader}>
+                  <MaterialIcons name="edit" size={18} color={theme.primary} />
+                  <Text style={styles.customRangeTitle}>Enter Page Range</Text>
                 </View>
-              ) : (
-                <Text style={styles.helperText}>
-                  Format: 1-5, 7, 9-12 (Max: {currentJob.totalPages})
-                </Text>
-              )}
+
+                <TextInput
+                  style={[
+                    styles.customRangeInput,
+                    pageRangeError && styles.customRangeInputError,
+                  ]}
+                  placeholder="Example: 1-5, 7, 10-12"
+                  placeholderTextColor={theme.textTertiary}
+                  value={customPageRange}
+                  onChangeText={handleCustomRangeChange}
+                  keyboardType="default"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+
+                {/* Error Message */}
+                {pageRangeError ? (
+                  <View style={styles.errorContainer}>
+                    <MaterialIcons name="error-outline" size={16} color="#EF4444" />
+                    <Text style={styles.errorText}>{pageRangeError}</Text>
+                  </View>
+                ) : customPageRange && validatedPageCount > 0 ? (
+                  <View style={styles.successContainer}>
+                    <MaterialIcons name="check-circle" size={16} color="#10B981" />
+                    <Text style={styles.successText}>
+                      {validatedPageCount} {validatedPageCount === 1 ? 'page' : 'pages'} selected
+                    </Text>
+                  </View>
+                ) : null}
+
+                {/* Helper Examples */}
+                <View style={styles.examplesContainer}>
+                  <Text style={styles.examplesLabel}>Valid formats:</Text>
+                  <View style={styles.examplesList}>
+                    <View style={styles.exampleItem}>
+                      <MaterialIcons name="check" size={14} color="#10B981" />
+                      <Text style={styles.exampleText}>Single page: 3</Text>
+                    </View>
+                    <View style={styles.exampleItem}>
+                      <MaterialIcons name="check" size={14} color="#10B981" />
+                      <Text style={styles.exampleText}>Range: 1-5</Text>
+                    </View>
+                    <View style={styles.exampleItem}>
+                      <MaterialIcons name="check" size={14} color="#10B981" />
+                      <Text style={styles.exampleText}>Multiple: 1-3, 7, 10-12</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.maxPagesNote}>
+                    Maximum: {currentJob.totalPages} pages
+                  </Text>
+                </View>
+              </View>
             </View>
           )}
         </View>
@@ -398,7 +507,9 @@ export default function SettingsScreen() {
             </Text>
             {priceInfo.pages > 0 && (
               <View style={styles.priceBadge}>
-                <Text style={styles.priceBadgeText}>{priceInfo.pages} pages</Text>
+                <Text style={styles.priceBadgeText}>
+                  {priceInfo.pages} {priceInfo.pages === 1 ? 'page' : 'pages'}
+                </Text>
               </View>
             )}
           </View>
@@ -406,10 +517,10 @@ export default function SettingsScreen() {
         <Pressable 
           style={[
             styles.proceedButton,
-            (priceInfo.total === 0 || pageRangeError) && styles.proceedButtonDisabled,
+            !isValidForProceed && styles.proceedButtonDisabled,
           ]} 
           onPress={handleProceed}
-          disabled={priceInfo.total === 0 || !!pageRangeError}
+          disabled={!isValidForProceed}
         >
           <Text style={styles.proceedButtonText}>Continue to Delivery</Text>
           <MaterialIcons name="arrow-forward" size={20} color="#FFF" />
@@ -618,7 +729,6 @@ const styles = StyleSheet.create({
   rangeToggleContainer: {
     flexDirection: 'row',
     gap: 8,
-    marginBottom: 12,
   },
   rangeToggleButton: {
     flex: 1,
@@ -628,6 +738,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: theme.border,
     alignItems: 'center',
+    backgroundColor: '#FFF',
   },
   rangeToggleButtonActive: {
     borderColor: theme.primary,
@@ -643,10 +754,29 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   customRangeContainer: {
+    marginTop: 12,
+  },
+  customRangeCard: {
+    backgroundColor: '#FFF',
+    borderRadius: theme.borderRadius.large,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: theme.border,
+    ...theme.shadow.small,
+  },
+  customRangeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
+    marginBottom: 12,
+  },
+  customRangeTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: theme.textPrimary,
   },
   customRangeInput: {
-    backgroundColor: '#FFF',
+    backgroundColor: theme.backgroundSecondary,
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderRadius: theme.borderRadius.medium,
@@ -657,21 +787,65 @@ const styles = StyleSheet.create({
   },
   customRangeInputError: {
     borderColor: '#EF4444',
+    backgroundColor: '#FEF2F2',
   },
   errorContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
+    marginTop: 8,
     paddingHorizontal: 4,
   },
   errorText: {
-    fontSize: 12,
+    flex: 1,
+    fontSize: 13,
     color: '#EF4444',
+    fontWeight: '500',
   },
-  helperText: {
+  successContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 8,
+    paddingHorizontal: 4,
+  },
+  successText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#10B981',
+    fontWeight: '600',
+  },
+  examplesContainer: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: theme.border,
+  },
+  examplesLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: theme.textSecondary,
+    marginBottom: 8,
+  },
+  examplesList: {
+    gap: 6,
+    marginBottom: 8,
+  },
+  exampleItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  exampleText: {
     fontSize: 12,
     color: theme.textSecondary,
-    paddingHorizontal: 4,
+    fontFamily: 'monospace',
+  },
+  maxPagesNote: {
+    fontSize: 11,
+    color: theme.textTertiary,
+    fontStyle: 'italic',
+    marginTop: 4,
   },
   counterContainer: {
     flexDirection: 'row',
