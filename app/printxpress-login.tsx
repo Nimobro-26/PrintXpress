@@ -1,6 +1,6 @@
 // Print-Xpress Login & OTP Verification Screen
-import { useState, useRef } from 'react';
-import { View, Text, TextInput, Pressable, StyleSheet, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { useState, useRef, useEffect } from 'react';
+import { View, Text, TextInput, Pressable, StyleSheet, KeyboardAvoidingView, Platform, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -14,34 +14,104 @@ export default function PrintXpressLoginScreen() {
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [phoneError, setPhoneError] = useState('');
+  const [otpError, setOtpError] = useState('');
+  const [resendTimer, setResendTimer] = useState(0);
+  const [sentOTP, setSentOTP] = useState('');
   
   const otpInputs = useRef<(TextInput | null)[]>([]);
+  const shakeAnimation = useRef(new Animated.Value(0)).current;
+  const successAnimation = useRef(new Animated.Value(0)).current;
+
+  // Phone number validation
+  const isPhoneValid = phoneNumber.length === 10 && /^\d{10}$/.test(phoneNumber);
+  
+  // OTP complete check
+  const isOtpComplete = otp.every(digit => digit !== '');
+
+  // Resend timer countdown
+  useEffect(() => {
+    if (resendTimer > 0) {
+      const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendTimer]);
+
+  // Handle phone number input
+  const handlePhoneChange = (text: string) => {
+    // Remove all non-numeric characters
+    const numericOnly = text.replace(/[^0-9]/g, '');
+    
+    // Limit to 10 digits
+    const limited = numericOnly.slice(0, 10);
+    setPhoneNumber(limited);
+    
+    // Real-time validation
+    if (limited.length > 0 && limited.length < 10) {
+      setPhoneError('Enter valid 10-digit number');
+    } else {
+      setPhoneError('');
+    }
+  };
 
   const handleSendOTP = async () => {
-    if (phoneNumber.length !== 10) {
-      Alert.alert('Invalid Number', 'Please enter a valid 10-digit mobile number');
+    if (!isPhoneValid) {
+      setPhoneError('Please enter a valid 10-digit number');
       return;
     }
 
     try {
-      await sendOTP('+91' + phoneNumber);
+      const generatedOTP = await sendOTP('+91' + phoneNumber);
+      setSentOTP(generatedOTP);
       setStep('otp');
+      setResendTimer(30);
+      setOtpError('');
       setTimeout(() => otpInputs.current[0]?.focus(), 300);
     } catch (error) {
-      Alert.alert('Error', 'Failed to send OTP. Please try again.');
+      setPhoneError('Failed to send OTP. Please try again.');
+    }
+  };
+
+  const handleResendOTP = async () => {
+    if (resendTimer > 0) return;
+    
+    try {
+      setOtp(['', '', '', '', '', '']);
+      const generatedOTP = await sendOTP('+91' + phoneNumber);
+      setSentOTP(generatedOTP);
+      setResendTimer(30);
+      setOtpError('');
+      setTimeout(() => otpInputs.current[0]?.focus(), 300);
+    } catch (error) {
+      setOtpError('Failed to resend OTP');
     }
   };
 
   const handleOtpChange = (index: number, value: string) => {
+    // Only allow digits
     if (!/^\d*$/.test(value)) return;
 
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
+    setOtpError('');
 
     // Auto-advance to next input
     if (value && index < 5) {
       otpInputs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpPaste = (text: string) => {
+    // Extract digits from pasted text
+    const digits = text.replace(/[^0-9]/g, '').slice(0, 6);
+    
+    if (digits.length === 6) {
+      const newOtp = digits.split('');
+      setOtp(newOtp);
+      setOtpError('');
+      // Focus last input
+      otpInputs.current[5]?.focus();
     }
   };
 
@@ -55,16 +125,38 @@ export default function PrintXpressLoginScreen() {
     const otpValue = otp.join('');
     
     if (otpValue.length !== 6) {
-      Alert.alert('Incomplete OTP', 'Please enter all 6 digits');
+      setOtpError('Please enter all 6 digits');
       return;
     }
 
     try {
-      await verifyOTP('+91' + phoneNumber, otpValue);
-      // Navigate to role selection
-      router.push('/printxpress-role-selection');
+      const isValid = await verifyOTP('+91' + phoneNumber, otpValue);
+      
+      if (isValid) {
+        // Success animation
+        Animated.sequence([
+          Animated.timing(successAnimation, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          router.push('/printxpress-role-selection');
+        });
+      }
     } catch (error) {
-      Alert.alert('Invalid OTP', 'Please check the OTP and try again');
+      // Error shake animation
+      setOtpError('Invalid OTP. Please try again.');
+      setOtp(['', '', '', '', '', '']);
+      
+      Animated.sequence([
+        Animated.timing(shakeAnimation, { toValue: 10, duration: 100, useNativeDriver: true }),
+        Animated.timing(shakeAnimation, { toValue: -10, duration: 100, useNativeDriver: true }),
+        Animated.timing(shakeAnimation, { toValue: 10, duration: 100, useNativeDriver: true }),
+        Animated.timing(shakeAnimation, { toValue: 0, duration: 100, useNativeDriver: true }),
+      ]).start(() => {
+        setTimeout(() => otpInputs.current[0]?.focus(), 100);
+      });
     }
   };
 
@@ -88,7 +180,11 @@ export default function PrintXpressLoginScreen() {
           {step === 'phone' ? (
             <View style={styles.stepContainer}>
               <Text style={styles.label}>Mobile Number</Text>
-              <View style={styles.phoneInputContainer}>
+              <View style={[
+                styles.phoneInputContainer,
+                phoneError && styles.inputError,
+                isPhoneValid && styles.inputSuccess,
+              ]}>
                 <Text style={styles.countryCode}>+91</Text>
                 <TextInput
                   style={styles.phoneInput}
@@ -97,24 +193,42 @@ export default function PrintXpressLoginScreen() {
                   keyboardType="phone-pad"
                   maxLength={10}
                   value={phoneNumber}
-                  onChangeText={setPhoneNumber}
+                  onChangeText={handlePhoneChange}
                   autoFocus
                 />
+                {isPhoneValid && (
+                  <MaterialIcons name="check-circle" size={20} color={printXpressTheme.colors.success} />
+                )}
               </View>
+              {phoneError ? (
+                <View style={styles.errorContainer}>
+                  <MaterialIcons name="error-outline" size={16} color={printXpressTheme.colors.error} />
+                  <Text style={styles.errorText}>{phoneError}</Text>
+                </View>
+              ) : null}
 
               <Pressable
-                style={[styles.primaryButton, isLoading && styles.buttonDisabled]}
+                style={[
+                  styles.primaryButton,
+                  (!isPhoneValid || isLoading) && styles.buttonDisabled,
+                ]}
                 onPress={handleSendOTP}
-                disabled={isLoading}
+                disabled={!isPhoneValid || isLoading}
               >
-                <Text style={styles.primaryButtonText}>Send OTP</Text>
-                <MaterialIcons name="arrow-forward" size={20} color="#fff" />
+                {isLoading ? (
+                  <Text style={styles.primaryButtonText}>Sending...</Text>
+                ) : (
+                  <>
+                    <Text style={styles.primaryButtonText}>Send OTP</Text>
+                    <MaterialIcons name="arrow-forward" size={20} color="#fff" />
+                  </>
+                )}
               </Pressable>
 
               {/* Demo Hint */}
               <View style={styles.demoHint}>
                 <MaterialIcons name="info-outline" size={16} color={printXpressTheme.colors.textSecondary} />
-                <Text style={styles.demoText}>Demo: Any 10-digit number works</Text>
+                <Text style={styles.demoText}>Demo: OTP will be shown in console</Text>
               </View>
             </View>
           ) : (
@@ -124,7 +238,10 @@ export default function PrintXpressLoginScreen() {
                 <Text style={styles.otpPhone}>+91 {phoneNumber}</Text>
               </View>
 
-              <View style={styles.otpContainer}>
+              <Animated.View style={[
+                styles.otpContainer,
+                { transform: [{ translateX: shakeAnimation }] },
+              ]}>
                 {otp.map((digit, index) => (
                   <TextInput
                     key={index}
@@ -132,36 +249,75 @@ export default function PrintXpressLoginScreen() {
                     style={[
                       styles.otpInput,
                       digit && styles.otpInputFilled,
+                      otpError && styles.otpInputError,
                     ]}
                     value={digit}
                     onChangeText={(value) => handleOtpChange(index, value)}
                     onKeyPress={({ nativeEvent: { key } }) => handleOtpKeyPress(index, key)}
+                    onPaste={(e) => {
+                      if (index === 0) {
+                        const text = e.nativeEvent.clipboardData?.getData('text') || '';
+                        handleOtpPaste(text);
+                      }
+                    }}
                     keyboardType="number-pad"
                     maxLength={1}
                     selectTextOnFocus
                   />
                 ))}
-              </View>
+              </Animated.View>
+              {otpError ? (
+                <View style={styles.errorContainer}>
+                  <MaterialIcons name="error-outline" size={16} color={printXpressTheme.colors.error} />
+                  <Text style={styles.errorText}>{otpError}</Text>
+                </View>
+              ) : null}
 
               <Pressable
-                style={[styles.primaryButton, isLoading && styles.buttonDisabled]}
+                style={[
+                  styles.primaryButton,
+                  (!isOtpComplete || isLoading) && styles.buttonDisabled,
+                ]}
                 onPress={handleVerifyOTP}
-                disabled={isLoading}
+                disabled={!isOtpComplete || isLoading}
               >
-                <Text style={styles.primaryButtonText}>Verify & Continue</Text>
+                {isLoading ? (
+                  <Text style={styles.primaryButtonText}>Verifying...</Text>
+                ) : (
+                  <Text style={styles.primaryButtonText}>Verify & Continue</Text>
+                )}
               </Pressable>
 
-              <Pressable
-                style={styles.resendButton}
-                onPress={() => setStep('phone')}
-              >
-                <Text style={styles.resendText}>Change number</Text>
-              </Pressable>
+              <View style={styles.otpActions}>
+                <Pressable
+                  style={[styles.resendButton, resendTimer > 0 && styles.resendButtonDisabled]}
+                  onPress={handleResendOTP}
+                  disabled={resendTimer > 0}
+                >
+                  {resendTimer > 0 ? (
+                    <Text style={styles.resendTextDisabled}>Resend in {resendTimer}s</Text>
+                  ) : (
+                    <Text style={styles.resendText}>Resend OTP</Text>
+                  )}
+                </Pressable>
+                
+                <Pressable
+                  style={styles.changeNumberButton}
+                  onPress={() => {
+                    setStep('phone');
+                    setOtp(['', '', '', '', '', '']);
+                    setOtpError('');
+                    setResendTimer(0);
+                  }}
+                >
+                  <Text style={styles.changeNumberText}>Change number</Text>
+                </Pressable>
+              </View>
 
               {/* Demo Hint */}
               <View style={styles.demoHint}>
                 <MaterialIcons name="info-outline" size={16} color={printXpressTheme.colors.textSecondary} />
-                <Text style={styles.demoText}>Demo: Any 6-digit code works</Text>
+                <Text style={styles.demoText}>Check console for OTP: {sentOTP}</Text>
               </View>
             </View>
           )}
@@ -233,6 +389,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     height: 56,
   },
+  inputError: {
+    borderColor: printXpressTheme.colors.error,
+    backgroundColor: printXpressTheme.colors.errorContainer + '10',
+  },
+  inputSuccess: {
+    borderColor: printXpressTheme.colors.success,
+    backgroundColor: printXpressTheme.colors.successContainer + '10',
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: -12,
+  },
+  errorText: {
+    ...printXpressTheme.typography.bodySmall,
+    color: printXpressTheme.colors.error,
+  },
   countryCode: {
     ...printXpressTheme.typography.bodyLarge,
     fontWeight: '600',
@@ -296,13 +470,40 @@ const styles = StyleSheet.create({
     borderColor: printXpressTheme.colors.primary,
     backgroundColor: printXpressTheme.colors.surfaceContainerLowest,
   },
+  otpInputError: {
+    borderColor: printXpressTheme.colors.error,
+  },
+  otpActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 12,
+  },
   resendButton: {
+    flex: 1,
     alignItems: 'center',
     paddingVertical: 12,
+  },
+  resendButtonDisabled: {
+    opacity: 0.5,
   },
   resendText: {
     ...printXpressTheme.typography.labelLarge,
     color: printXpressTheme.colors.secondary,
+    fontWeight: '600',
+  },
+  resendTextDisabled: {
+    ...printXpressTheme.typography.labelLarge,
+    color: printXpressTheme.colors.textTertiary,
+  },
+  changeNumberButton: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  changeNumberText: {
+    ...printXpressTheme.typography.labelLarge,
+    color: printXpressTheme.colors.textSecondary,
   },
   demoHint: {
     flexDirection: 'row',

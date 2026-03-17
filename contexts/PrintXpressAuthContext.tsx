@@ -6,8 +6,8 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  sendOTP: (phoneNumber: string) => Promise<void>;
-  verifyOTP: (phoneNumber: string, otp: string) => Promise<void>;
+  sendOTP: (phoneNumber: string) => Promise<string>;
+  verifyOTP: (phoneNumber: string, otp: string) => Promise<boolean>;
   selectRole: (role: UserRole) => void;
   logout: () => void;
 }
@@ -18,34 +18,45 @@ export const PrintXpressAuthProvider = ({ children }: { children: ReactNode }) =
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [pendingPhone, setPendingPhone] = useState<string>('');
+  const [generatedOTP, setGeneratedOTP] = useState<string>('');
 
-  const sendOTP = async (phoneNumber: string) => {
+  const sendOTP = async (phoneNumber: string): Promise<string> => {
     setIsLoading(true);
     try {
-      // Mock OTP send - in real app, use Firebase Phone Auth
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Generate random 6-digit OTP
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      setGeneratedOTP(otp);
       setPendingPhone(phoneNumber);
-      console.log('Mock OTP sent to:', phoneNumber);
-      console.log('Demo OTP: 123456');
+      
+      console.log('🔐 OTP Generated:', otp);
+      console.log('📱 Phone:', phoneNumber);
+      
+      return otp;
     } catch (error) {
       console.error('OTP send error:', error);
-      throw error;
+      throw new Error('Failed to send OTP');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const verifyOTP = async (phoneNumber: string, otp: string) => {
+  const verifyOTP = async (phoneNumber: string, otp: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      // Mock OTP verification
+      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Accept any 6-digit OTP for demo
-      if (otp.length === 6) {
-        // Don't set user yet - wait for role selection
-        console.log('OTP verified for:', phoneNumber);
+      // Verify OTP matches generated one
+      const isValid = otp === generatedOTP;
+      
+      if (isValid) {
+        console.log('✅ OTP verified successfully');
+        return true;
       } else {
+        console.log('❌ Invalid OTP. Expected:', generatedOTP, 'Got:', otp);
         throw new Error('Invalid OTP');
       }
     } catch (error) {

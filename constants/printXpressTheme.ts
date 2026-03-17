@@ -35,6 +35,10 @@ export const printXpressTheme = {
     errorContainer: '#ffdad6',
     onError: '#ffffff',
     
+    // Success (added for validation feedback)
+    success: '#006d37',
+    successContainer: '#6bfe9c',
+    
     // Borders & Outlines
     border: '#c3c6d4',
     outline: '#737783',
