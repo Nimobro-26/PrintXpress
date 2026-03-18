@@ -1,21 +1,33 @@
 // Root Layout - Print-Xpress
 import { Stack } from 'expo-router';
-import { PrintXpressAuthProvider } from '../contexts/PrintXpressAuthContext';
-import { StatusBar } from 'expo-status-bar';
+import { AuthProvider } from '../contexts/AuthContext';
+import { PrintProvider } from '../contexts/PrintContext';
 
 export default function RootLayout() {
   return (
-    <PrintXpressAuthProvider>
-      <StatusBar style="auto" />
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="printxpress-splash" />
-        <Stack.Screen name="printxpress-login" />
-        <Stack.Screen name="printxpress-role-selection" />
-        <Stack.Screen name="printxpress-user-home" />
-        <Stack.Screen name="printxpress-pilot-dashboard" />
-        <Stack.Screen name="printxpress-admin-dashboard" />
-      </Stack>
-    </PrintXpressAuthProvider>
+    <AuthProvider>
+      <PrintProvider>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="auth" />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="upload" />
+          <Stack.Screen name="settings" />
+          <Stack.Screen name="payment" />
+          <Stack.Screen name="otp" />
+          <Stack.Screen name="success" />
+          <Stack.Screen name="profile-settings" />
+          <Stack.Screen name="notifications" />
+          <Stack.Screen name="print-settings" />
+          <Stack.Screen name="payment-methods" />
+          <Stack.Screen name="help" />
+          <Stack.Screen name="feedback" />
+          <Stack.Screen name="about" />
+          <Stack.Screen name="delivery" />
+          <Stack.Screen name="delivery-tracking" />
+          <Stack.Screen name="address-selection" />
+        </Stack>
+      </PrintProvider>
+    </AuthProvider>
   );
 }
