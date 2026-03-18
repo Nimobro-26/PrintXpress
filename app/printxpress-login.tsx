@@ -18,6 +18,7 @@ export default function PrintXpressLoginScreen() {
   const [otpError, setOtpError] = useState('');
   const [resendTimer, setResendTimer] = useState(0);
   const [sentOTP, setSentOTP] = useState('');
+  const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   
   const otpInputs = useRef<(TextInput | null)[]>([]);
   const shakeAnimation = useRef(new Animated.Value(0)).current;
@@ -243,27 +244,32 @@ export default function PrintXpressLoginScreen() {
                 { transform: [{ translateX: shakeAnimation }] },
               ]}>
                 {otp.map((digit, index) => (
-                  <TextInput
-                    key={index}
-                    ref={(ref) => (otpInputs.current[index] = ref)}
-                    style={[
-                      styles.otpInput,
-                      digit && styles.otpInputFilled,
-                      otpError && styles.otpInputError,
-                    ]}
-                    value={digit}
-                    onChangeText={(value) => handleOtpChange(index, value)}
-                    onKeyPress={({ nativeEvent: { key } }) => handleOtpKeyPress(index, key)}
-                    onPaste={(e) => {
-                      if (index === 0) {
-                        const text = e.nativeEvent.clipboardData?.getData('text') || '';
-                        handleOtpPaste(text);
-                      }
-                    }}
-                    keyboardType="number-pad"
-                    maxLength={1}
-                    selectTextOnFocus
-                  />
+                  <View key={index} style={styles.otpBoxWrapper}>
+                    <TextInput
+                      ref={(ref) => (otpInputs.current[index] = ref)}
+                      style={[
+                        styles.otpInput,
+                        focusedIndex === index && styles.otpInputFocused,
+                        digit && styles.otpInputFilled,
+                        otpError && styles.otpInputError,
+                      ]}
+                      value={digit}
+                      onChangeText={(value) => handleOtpChange(index, value)}
+                      onKeyPress={({ nativeEvent: { key } }) => handleOtpKeyPress(index, key)}
+                      onFocus={() => setFocusedIndex(index)}
+                      onBlur={() => setFocusedIndex(null)}
+                      onPaste={(e) => {
+                        if (index === 0) {
+                          const text = e.nativeEvent.clipboardData?.getData('text') || '';
+                          handleOtpPaste(text);
+                        }
+                      }}
+                      keyboardType="number-pad"
+                      maxLength={1}
+                      selectTextOnFocus
+                      returnKeyType="next"
+                    />
+                  </View>
                 ))}
               </Animated.View>
               {otpError ? (
@@ -451,20 +457,32 @@ const styles = StyleSheet.create({
   },
   otpContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 16,
+  },
+  otpBoxWrapper: {
+    width: 52,
+    height: 60,
   },
   otpInput: {
-    flex: 1,
-    height: 64,
+    width: 52,
+    height: 60,
     backgroundColor: printXpressTheme.colors.surfaceContainerLow,
-    borderRadius: printXpressTheme.borderRadius.large,
+    borderRadius: printXpressTheme.borderRadius.medium,
     borderWidth: 2,
     borderColor: printXpressTheme.colors.border,
     textAlign: 'center',
-    ...printXpressTheme.typography.headlineSmall,
+    fontSize: 24,
     fontWeight: '700',
     color: printXpressTheme.colors.textPrimary,
+    padding: 0,
+  },
+  otpInputFocused: {
+    borderColor: printXpressTheme.colors.primary,
+    backgroundColor: printXpressTheme.colors.surfaceContainerLowest,
+    borderWidth: 2.5,
   },
   otpInputFilled: {
     borderColor: printXpressTheme.colors.primary,
@@ -472,6 +490,7 @@ const styles = StyleSheet.create({
   },
   otpInputError: {
     borderColor: printXpressTheme.colors.error,
+    backgroundColor: printXpressTheme.colors.errorContainer + '10',
   },
   otpActions: {
     flexDirection: 'row',
