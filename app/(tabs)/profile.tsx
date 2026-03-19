@@ -14,10 +14,15 @@ export default function ProfileScreen() {
   const confirmAndSignOut = async () => {
     try {
       await signOut();
-      router.replace('/');
+      // Navigate directly to auth-otp screen after sign out
+      router.replace('/auth-otp');
     } catch (error) {
       console.error('Sign out error:', error);
-      Alert.alert('Error', 'Failed to sign out. Please try again.');
+      if (Platform.OS === 'web') {
+        alert('Failed to sign out. Please try again.');
+      } else {
+        Alert.alert('Error', 'Failed to sign out. Please try again.');
+      }
     }
   };
 
