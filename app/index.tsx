@@ -15,9 +15,11 @@ export default function SplashScreen() {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (user) {
-        router.replace('/(tabs)');
+        // User is logged in - go to role selection
+        router.replace('/role-selection');
       } else {
-        router.replace('/auth');
+        // No user - go to OTP login
+        router.replace('/auth-otp');
       }
     }, 2500);
 

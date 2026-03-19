@@ -9,8 +9,12 @@ export default function RootLayout() {
       <PrintProvider>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" />
+          <Stack.Screen name="auth-otp" />
+          <Stack.Screen name="role-selection" />
           <Stack.Screen name="auth" />
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="(admin)" />
+          <Stack.Screen name="(pilot)" />
           <Stack.Screen name="upload" />
           <Stack.Screen name="settings" />
           <Stack.Screen name="payment" />
