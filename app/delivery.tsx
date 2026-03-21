@@ -7,14 +7,10 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { theme } from '../constants/theme';
 import { usePrint } from '../contexts/PrintContext';
 
-type PackagingType = 'standard' | 'premium';
-
 export default function DeliveryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentJob } = usePrint();
-  
-  const [selectedPackaging, setSelectedPackaging] = useState<PackagingType>('standard');
   const [deliveryAddress, setDeliveryAddress] = useState({
     label: 'Home Address',
     address: '123 Sunshine Blvd, Los Angeles, CA 90001',
@@ -29,7 +25,7 @@ export default function DeliveryScreen() {
   const deliveryFee = filesCount >= 5 ? 0 : deliveryAddress.distance * 0.80; // $0.80 per km
   const estimatedTime = Math.ceil(deliveryAddress.distance * 3); // 3 mins per km
   
-  const packagingCost = selectedPackaging === 'premium' ? 1.50 : 0;
+  const packagingCost = 0; // Free sealed envelope
   const totalAmount = printingCost + deliveryFee + packagingCost;
 
   const handleChangeAddress = () => {
@@ -108,18 +104,10 @@ export default function DeliveryScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Packaging Options</Text>
 
-          {/* Standard Envelope */}
-          <Pressable
-            style={[
-              styles.packagingCard,
-              selectedPackaging === 'standard' && styles.packagingCardSelected,
-            ]}
-            onPress={() => setSelectedPackaging('standard')}
-          >
-            <View style={styles.radioButton}>
-              {selectedPackaging === 'standard' ? (
-                <View style={styles.radioButtonInner} />
-              ) : null}
+          {/* Standard Envelope - Selected by default */}
+          <View style={[styles.packagingCard, styles.packagingCardSelected]}>
+            <View style={styles.checkIcon}>
+              <MaterialIcons name="check-circle" size={24} color={theme.success} />
             </View>
             <View style={styles.packagingContent}>
               <Text style={styles.packagingTitle}>Sealed Envelope</Text>
@@ -128,29 +116,7 @@ export default function DeliveryScreen() {
               </Text>
             </View>
             <Text style={styles.packagingPrice}>FREE</Text>
-          </Pressable>
-
-          {/* Premium Envelope */}
-          <Pressable
-            style={[
-              styles.packagingCard,
-              selectedPackaging === 'premium' && styles.packagingCardSelected,
-            ]}
-            onPress={() => setSelectedPackaging('premium')}
-          >
-            <View style={styles.radioButton}>
-              {selectedPackaging === 'premium' ? (
-                <View style={styles.radioButtonInner} />
-              ) : null}
-            </View>
-            <View style={styles.packagingContent}>
-              <Text style={styles.packagingTitle}>Tamper-Proof (Premium)</Text>
-              <Text style={styles.packagingDescription}>
-                Enhanced privacy for sensitive documents
-              </Text>
-            </View>
-            <Text style={styles.packagingPricePaid}>$1.50</Text>
-          </Pressable>
+          </View>
 
           {/* Privacy Note */}
           <View style={styles.privacyNote}>
@@ -374,21 +340,8 @@ const styles = StyleSheet.create({
     borderColor: theme.primary,
     backgroundColor: '#F8FAFB',
   },
-  radioButton: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: theme.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
+  checkIcon: {
     marginRight: 12,
-  },
-  radioButtonInner: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: theme.primary,
   },
   packagingContent: {
     flex: 1,
