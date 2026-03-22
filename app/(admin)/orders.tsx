@@ -84,10 +84,16 @@ export default function AdminOrdersScreen() {
               </View>
 
               <View style={styles.orderActions}>
-                <Pressable style={styles.primaryAction}>
+                <Pressable 
+                  style={styles.primaryAction}
+                  onPress={() => alert(`Order ${order.id} Details\n\nCustomer: ${order.customer}\nType: ${order.type}\nPages: ${order.pages}\nStatus: ${order.status.toUpperCase()}\n\nTimestamp: ${new Date().toLocaleString()}\nPrinter: PRT-${Math.floor(Math.random() * 900) + 100}\nLocation: ${['Main Library', 'South Wing', 'Campus Hub'][Math.floor(Math.random() * 3)]}`)}
+                >
                   <Text style={styles.primaryActionText}>View Details</Text>
                 </Pressable>
-                <Pressable style={styles.secondaryAction}>
+                <Pressable 
+                  style={styles.secondaryAction}
+                  onPress={() => alert(`Reassign Order ${order.id}\n\nSelect new agent:\n• Marcus (Online, 2.1km away)\n• Elena (Online, 3.5km away)\n• Alex (On Break)\n\nCurrent: Auto-assigned`)}
+                >
                   <Text style={styles.secondaryActionText}>Reassign</Text>
                 </Pressable>
               </View>

@@ -27,7 +27,10 @@ export default function AdminPrintersScreen() {
     <SafeAreaView edges={['top']} style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Printer Fleet</Text>
-        <Pressable style={styles.addButton}>
+        <Pressable 
+          style={styles.addButton}
+          onPress={() => alert('Add New Printer\n\nMethods:\n• Scan QR Code\n• Enter Serial Number\n• Auto-Detect Network\n\nRequired info:\n- Printer Model\n- Location/Zone\n- Network Config')}
+        >
           <MaterialIcons name="add" size={24} color="#FFF" />
         </Pressable>
       </View>
@@ -60,13 +63,22 @@ export default function AdminPrintersScreen() {
               </View>
 
               <View style={styles.printerActions}>
-                <Pressable style={styles.actionButton}>
+                <Pressable 
+                  style={styles.actionButton}
+                  onPress={() => alert(`Edit ${printer.id}\n\nCurrent Location: ${printer.location}\nStatus: ${printer.status.toUpperCase()}\n\nUpdate:\n• Location/Zone\n• Maintenance Schedule\n• Access Permissions\n• Network Settings`)}
+                >
                   <MaterialIcons name="edit" size={18} color={theme.textSecondary} />
                 </Pressable>
-                <Pressable style={styles.actionButton}>
+                <Pressable 
+                  style={styles.actionButton}
+                  onPress={() => alert(`${printer.id} Statistics\n\nToday:\n• 248 jobs completed\n• 3,124 pages printed\n• 94.2% uptime\n• Avg speed: 42 ppm\n\nInk Levels:\n• Black: ${printer.status === 'warning' ? '12%' : '78%'}\n• Color: ${printer.status === 'warning' ? '8%' : '65%'}\n\nLast maintenance: ${new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toLocaleDateString()}`)}
+                >
                   <MaterialIcons name="bar-chart" size={18} color={theme.textSecondary} />
                 </Pressable>
-                <Pressable style={styles.actionButton}>
+                <Pressable 
+                  style={styles.actionButton}
+                  onPress={() => alert(`Remove ${printer.id}?\n\nLocation: ${printer.location}\nStatus: ${printer.status.toUpperCase()}\n\n⚠️ Warning: This will:\n• Remove from network\n• Cancel pending jobs\n• Disable remote access\n\nThis action cannot be undone.`)}
+                >
                   <MaterialIcons name="delete" size={18} color={theme.error} />
                 </Pressable>
               </View>

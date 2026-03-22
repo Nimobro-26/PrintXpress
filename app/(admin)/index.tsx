@@ -25,7 +25,10 @@ export default function AdminDashboardScreen() {
           <Text style={styles.greeting}>Admin Console</Text>
           <Text style={styles.title}>Print-Xpress</Text>
         </View>
-        <Pressable style={styles.notificationButton}>
+        <Pressable 
+          style={styles.notificationButton}
+          onPress={() => alert('Notifications (3)\n\n• Printer PRT-112 low ink\n• 5 new pending orders\n• System update available')}
+        >
           <MaterialIcons name="notifications" size={24} color={theme.textPrimary} />
           <View style={styles.badge} />
         </Pressable>
@@ -41,11 +44,17 @@ export default function AdminDashboardScreen() {
         {/* Quick Actions */}
         <View style={styles.section}>
           <View style={styles.quickActions}>
-            <Pressable style={styles.actionButton}>
+            <Pressable 
+              style={styles.actionButton}
+              onPress={() => alert('Add New Printer\n\nSerial Number: ________\nLocation: ________\nModel: ________\n\nScan QR code or enter manually.')}
+            >
               <MaterialIcons name="add-circle" size={24} color={theme.primary} />
               <Text style={styles.actionText}>Add Printer</Text>
             </Pressable>
-            <Pressable style={[styles.actionButton, styles.actionButtonPrimary]}>
+            <Pressable 
+              style={[styles.actionButton, styles.actionButtonPrimary]}
+              onPress={() => alert('Broadcast Alert\n\nSend system-wide notification to all printers and agents.\n\nExamples:\n• Scheduled maintenance\n• System updates\n• Emergency notices')}
+            >
               <MaterialIcons name="campaign" size={24} color="#FFF" />
               <Text style={[styles.actionText, styles.actionTextWhite]}>Broadcast Alert</Text>
             </Pressable>
@@ -109,8 +118,7 @@ export default function AdminDashboardScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Recent Activity</Text>
-            <Pressable>
-              <Text style={styles.viewAll}>View All</Text>
+            <Pressable onPress={() => alert('Activity Logs\n\nAll system events:\n• Printer status changes\n• Agent activity\n• System updates\n• Order completions\n• Error notifications\n\nView detailed logs in System Monitor.')}>              <Text style={styles.viewAll}>View All</Text>
             </Pressable>
           </View>
 

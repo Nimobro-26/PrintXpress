@@ -13,8 +13,32 @@ export default function AdminProfileScreen() {
   const { signOut } = useAuth();
 
   const handleSignOut = async () => {
-    await signOut();
-    router.replace('/auth-otp');
+    try {
+      await signOut();
+      router.replace('/auth-otp');
+    } catch (error) {
+      console.error('Sign out error:', error);
+      alert('Failed to sign out. Please try again.');
+    }
+  };
+
+  const handleMenuPress = (item: any) => {
+    switch (item.label) {
+      case 'Security Settings':
+        alert(`Security Settings\n\nTwo-Factor Authentication: Enabled\nBiometric Login: Enabled\nFirewall Status: Active\n\nSession Management:\n• Auto-logout: 30 minutes\n• Max concurrent sessions: 3\n• Last login: ${new Date().toLocaleString()}`);
+        break;
+      case 'User Permissions':
+        alert('User Permissions\n\nRole-Based Access Control:\n\nAdmin (Full Access)\n• System configuration\n• User management\n• All reports\n\nPrint Pilot (Limited)\n• Accept/reject orders\n• Delivery tracking\n• Earnings view\n\nUser (Basic)\n• Upload documents\n• Track orders\n• View history');
+        break;
+      case 'Audit Logs':
+        alert(`Audit Logs\n\nRecent Activity:\n\n${new Date().toLocaleTimeString()} - Admin Sarah logged in\n${new Date(Date.now() - 300000).toLocaleTimeString()} - Printer PRT-089 added\n${new Date(Date.now() - 600000).toLocaleTimeString()} - System settings updated\n${new Date(Date.now() - 900000).toLocaleTimeString()} - Agent permissions modified\n\nExport logs as CSV/PDF`);
+        break;
+      case 'System Configuration':
+        alert('System Configuration\n\nEnvironment: Production\nAPI Version: 2.1.4\nDatabase: PostgreSQL 14.2\n\nSettings:\n• Max file size: 50MB\n• Session timeout: 30min\n• Backup schedule: Daily 2AM\n• Maintenance window: Sun 3-5AM');
+        break;
+      default:
+        alert(item.label);
+    }
   };
 
   const stats = [
@@ -82,7 +106,11 @@ export default function AdminProfileScreen() {
         <View style={styles.section}>
           <View style={styles.menuContainer}>
             {menuItems.map((item, index) => (
-              <Pressable key={index} style={styles.menuItem}>
+              <Pressable 
+                key={index} 
+                style={styles.menuItem}
+                onPress={() => handleMenuPress(item)}
+              >
                 <View style={styles.menuIcon}>
                   <MaterialIcons name={item.icon as any} size={24} color={theme.textSecondary} />
                 </View>
