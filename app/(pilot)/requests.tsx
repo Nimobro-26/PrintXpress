@@ -1,17 +1,40 @@
 // Print Pilot Incoming Requests Screen
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, Pressable, Alert, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
 
 export default function PilotRequestsScreen() {
   const insets = useSafeAreaInsets();
-
-  const requests = [
+  const [requests, setRequests] = useState([
     { id: 'PX-1024', priority: 'urgent', pickup: 'Downtown ATM', delivery: '123 College Ave', distance: 1.2, pages: 12, time: 15 },
     { id: 'PX-1025', priority: 'standard', pickup: 'East Side Hub', delivery: '455 Innovation Blvd', distance: 3.8, pages: 48, time: 25 },
     { id: 'PX-1026', priority: 'batch', pickup: 'Campus Library', delivery: 'Science Hall Annex', distance: 0.5, pages: 120, time: 8 },
-  ];
+  ]);
+
+  const handleAcceptOrder = (requestId: string) => {
+    const message = `Order ${requestId} accepted!\n\nNavigate to pickup location and collect the printed documents. Customer will receive a notification.`;
+    if (Platform.OS === 'web') {
+      alert(message);
+    } else {
+      Alert.alert('Order Accepted', message, [
+        { text: 'Start Navigation', onPress: () => console.log('Navigate to pickup') },
+        { text: 'OK' },
+      ]);
+    }
+    setRequests(prev => prev.filter(r => r.id !== requestId));
+  };
+
+  const handleRejectOrder = (requestId: string) => {
+    const message = `Order ${requestId} rejected. It will be reassigned to another pilot.`;
+    if (Platform.OS === 'web') {
+      alert(message);
+    } else {
+      Alert.alert('Order Rejected', message);
+    }
+    setRequests(prev => prev.filter(r => r.id !== requestId));
+  };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -36,68 +59,84 @@ export default function PilotRequestsScreen() {
         }}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.requestsList}>
-          {requests.map((request) => (
-            <View key={request.id} style={styles.requestCard}>
-              <View style={styles.requestHeader}>
-                <Text style={styles.requestId}>#{request.id}</Text>
-                <View style={[styles.priorityBadge, { backgroundColor: `${getPriorityColor(request.priority)}20` }]}>
-                  {request.priority === 'urgent' && (
-                    <MaterialIcons name="bolt" size={14} color={getPriorityColor(request.priority)} />
-                  )}
-                  <Text style={[styles.priorityText, { color: getPriorityColor(request.priority) }]}>
-                    {request.priority.toUpperCase()}
-                  </Text>
-                </View>
-              </View>
-
-              {/* Route */}
-              <View style={styles.routeContainer}>
-                <View style={styles.routeIndicators}>
-                  <MaterialIcons name="location-on" size={20} color={theme.primary} />
-                  <View style={styles.routeLine} />
-                  <MaterialIcons name="flag" size={20} color={theme.success} />
-                </View>
-                <View style={styles.routeDetails}>
-                  <View style={styles.routePoint}>
-                    <Text style={styles.routeLabel}>PICKUP</Text>
-                    <Text style={styles.routeValue}>{request.pickup}</Text>
-                  </View>
-                  <View style={styles.routePoint}>
-                    <Text style={styles.routeLabel}>DELIVERY</Text>
-                    <Text style={styles.routeValue}>{request.delivery}</Text>
+        {requests.length === 0 ? (
+          <View style={styles.emptyState}>
+            <MaterialIcons name="check-circle" size={64} color={theme.success} />
+            <Text style={styles.emptyTitle}>All caught up!</Text>
+            <Text style={styles.emptyText}>
+              No pending requests at the moment. New orders will appear here automatically.
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.requestsList}>
+            {requests.map((request) => (
+              <View key={request.id} style={styles.requestCard}>
+                <View style={styles.requestHeader}>
+                  <Text style={styles.requestId}>#{request.id}</Text>
+                  <View style={[styles.priorityBadge, { backgroundColor: `${getPriorityColor(request.priority)}20` }]}>
+                    {request.priority === 'urgent' && (
+                      <MaterialIcons name="bolt" size={14} color={getPriorityColor(request.priority)} />
+                    )}
+                    <Text style={[styles.priorityText, { color: getPriorityColor(request.priority) }]}>
+                      {request.priority.toUpperCase()}
+                    </Text>
                   </View>
                 </View>
-              </View>
 
-              {/* Metrics */}
-              <View style={styles.metricsContainer}>
-                <View style={styles.metric}>
-                  <Text style={styles.metricLabel}>DISTANCE</Text>
-                  <Text style={styles.metricValue}>{request.distance} km</Text>
+                {/* Route */}
+                <View style={styles.routeContainer}>
+                  <View style={styles.routeIndicators}>
+                    <MaterialIcons name="location-on" size={20} color={theme.primary} />
+                    <View style={styles.routeLine} />
+                    <MaterialIcons name="flag" size={20} color={theme.success} />
+                  </View>
+                  <View style={styles.routeDetails}>
+                    <View style={styles.routePoint}>
+                      <Text style={styles.routeLabel}>PICKUP</Text>
+                      <Text style={styles.routeValue}>{request.pickup}</Text>
+                    </View>
+                    <View style={styles.routePoint}>
+                      <Text style={styles.routeLabel}>DELIVERY</Text>
+                      <Text style={styles.routeValue}>{request.delivery}</Text>
+                    </View>
+                  </View>
                 </View>
-                <View style={styles.metric}>
-                  <Text style={styles.metricLabel}>PAGES</Text>
-                  <Text style={styles.metricValue}>{request.pages}</Text>
-                </View>
-                <View style={styles.metric}>
-                  <Text style={styles.metricLabel}>EST. TIME</Text>
-                  <Text style={styles.metricValue}>{request.time} mins</Text>
-                </View>
-              </View>
 
-              {/* Actions */}
-              <View style={styles.actions}>
-                <Pressable style={styles.acceptButton}>
-                  <Text style={styles.acceptButtonText}>Accept Order</Text>
-                </Pressable>
-                <Pressable style={styles.rejectButton}>
-                  <Text style={styles.rejectButtonText}>Reject</Text>
-                </Pressable>
+                {/* Metrics */}
+                <View style={styles.metricsContainer}>
+                  <View style={styles.metric}>
+                    <Text style={styles.metricLabel}>DISTANCE</Text>
+                    <Text style={styles.metricValue}>{request.distance} km</Text>
+                  </View>
+                  <View style={styles.metric}>
+                    <Text style={styles.metricLabel}>PAGES</Text>
+                    <Text style={styles.metricValue}>{request.pages}</Text>
+                  </View>
+                  <View style={styles.metric}>
+                    <Text style={styles.metricLabel}>EST. TIME</Text>
+                    <Text style={styles.metricValue}>{request.time} mins</Text>
+                  </View>
+                </View>
+
+                {/* Actions */}
+                <View style={styles.actions}>
+                  <Pressable
+                    style={styles.acceptButton}
+                    onPress={() => handleAcceptOrder(request.id)}
+                  >
+                    <Text style={styles.acceptButtonText}>Accept Order</Text>
+                  </Pressable>
+                  <Pressable
+                    style={styles.rejectButton}
+                    onPress={() => handleRejectOrder(request.id)}
+                  >
+                    <Text style={styles.rejectButtonText}>Reject</Text>
+                  </Pressable>
+                </View>
               </View>
-            </View>
-          ))}
-        </View>
+            ))}
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -243,5 +282,24 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: theme.textPrimary,
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 80,
+    paddingHorizontal: 32,
+  },
+  emptyTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: theme.textPrimary,
+    marginTop: 24,
+    marginBottom: 8,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: theme.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });

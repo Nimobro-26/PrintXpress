@@ -1,5 +1,5 @@
 // Print Pilot Profile
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Alert, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -11,9 +11,36 @@ export default function PilotProfileScreen() {
   const insets = useSafeAreaInsets();
   const { signOut } = useAuth();
 
-  const handleSignOut = async () => {
-    await signOut();
-    router.replace('/auth-otp');
+  const confirmAndSignOut = async () => {
+    try {
+      await signOut();
+      router.replace('/auth-otp');
+    } catch (error) {
+      console.error('Sign out error:', error);
+      if (Platform.OS === 'web') {
+        alert('Failed to sign out. Please try again.');
+      } else {
+        Alert.alert('Error', 'Failed to sign out. Please try again.');
+      }
+    }
+  };
+
+  const handleSignOut = () => {
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm('Are you sure you want to sign out?');
+      if (confirmed) {
+        confirmAndSignOut();
+      }
+    } else {
+      Alert.alert(
+        'Sign Out',
+        'Are you sure you want to sign out?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Sign Out', style: 'destructive', onPress: confirmAndSignOut },
+        ]
+      );
+    }
   };
 
   return (
@@ -82,21 +109,30 @@ export default function PilotProfileScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Operational Settings</Text>
           <View style={styles.menuContainer}>
-            <Pressable style={styles.menuItem}>
+            <Pressable
+              style={styles.menuItem}
+              onPress={() => alert('Notification Settings\n\nConfigure:\n• New order alerts\n• Delivery updates\n• Payment notifications\n• System announcements')}
+            >
               <View style={styles.menuIcon}>
                 <MaterialIcons name="notifications" size={24} color={theme.textSecondary} />
               </View>
               <Text style={styles.menuLabel}>Notification Settings</Text>
               <MaterialIcons name="chevron-right" size={24} color={theme.textTertiary} />
             </Pressable>
-            <Pressable style={styles.menuItem}>
+            <Pressable
+              style={styles.menuItem}
+              onPress={() => alert('Payout Methods\n\nCurrent method: Bank Transfer\n\nAccount: **** 4567\nNext payout: Weekly on Friday\nPending: $482.50')}
+            >
               <View style={styles.menuIcon}>
                 <MaterialIcons name="account-balance-wallet" size={24} color={theme.textSecondary} />
               </View>
               <Text style={styles.menuLabel}>Payout Methods</Text>
               <MaterialIcons name="chevron-right" size={24} color={theme.textTertiary} />
             </Pressable>
-            <Pressable style={styles.menuItem}>
+            <Pressable
+              style={styles.menuItem}
+              onPress={() => alert('Help & Support\n\n24/7 Support Line: +1-555-PILOT (74568)\n\nCommon topics:\n• Delivery guidelines\n• OTP verification\n• Payment issues\n• Vehicle maintenance')}
+            >
               <View style={styles.menuIcon}>
                 <MaterialIcons name="help" size={24} color={theme.textSecondary} />
               </View>

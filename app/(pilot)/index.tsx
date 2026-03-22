@@ -1,12 +1,16 @@
 // Print Pilot Dashboard
-import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
+import { useState } from 'react';
+import { View, Text, Pressable, StyleSheet, ScrollView, Switch } from 'react-native';
+import { useRouter } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '../../constants/theme';
 
 export default function PilotDashboardScreen() {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
+  const [isOnDuty, setIsOnDuty] = useState(true);
 
   const stats = [
     { label: 'Orders Delivered', value: '24', change: '+12%', icon: 'local-shipping', color: theme.success },
@@ -36,29 +40,40 @@ export default function PilotDashboardScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Status Card */}
-        <Pressable style={styles.statusCard}>
+        <View style={styles.statusCard}>
           <LinearGradient
-            colors={['#047857', '#059669']}
+            colors={isOnDuty ? ['#047857', '#059669'] : ['#6B7280', '#9CA3AF']}
             style={styles.statusGradient}
           >
             <View style={styles.statusHeader}>
               <View style={styles.statusBadge}>
-                <View style={styles.statusDot} />
-                <Text style={styles.statusText}>Active Duty</Text>
+                <View style={[styles.statusDot, !isOnDuty && { backgroundColor: '#9CA3AF' }]} />
+                <Text style={styles.statusText}>{isOnDuty ? 'Active Duty' : 'Off Duty'}</Text>
               </View>
-              <View style={styles.toggleContainer}>
-                <View style={styles.toggle}>
-                  <View style={styles.toggleThumb} />
-                </View>
-              </View>
+              <Switch
+                value={isOnDuty}
+                onValueChange={setIsOnDuty}
+                trackColor={{ false: '#D1D5DB', true: '#34D399' }}
+                thumbColor="#FFF"
+                ios_backgroundColor="#D1D5DB"
+              />
             </View>
-            <Text style={styles.statusTitle}>Your next priority hub is ready for dispatch</Text>
-            <Pressable style={styles.actionButton}>
-              <Text style={styles.actionButtonText}>Go To Active Queue</Text>
-              <MaterialIcons name="arrow-forward" size={18} color={theme.success} />
-            </Pressable>
+            <Text style={styles.statusTitle}>
+              {isOnDuty
+                ? 'Your next priority hub is ready for dispatch'
+                : 'Go online to start receiving delivery requests'}
+            </Text>
+            {isOnDuty && (
+              <Pressable
+                style={styles.actionButton}
+                onPress={() => router.push('/(pilot)/requests')}
+              >
+                <Text style={styles.actionButtonText}>Go To Active Queue</Text>
+                <MaterialIcons name="arrow-forward" size={18} color={theme.success} />
+              </Pressable>
+            )}
           </LinearGradient>
-        </Pressable>
+        </View>
 
         {/* Stats */}
         <View style={styles.statsContainer}>
@@ -107,19 +122,31 @@ export default function PilotDashboardScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Quick Actions</Text>
           <View style={styles.actionsGrid}>
-            <Pressable style={styles.quickAction}>
+            <Pressable
+              style={styles.quickAction}
+              onPress={() => router.push('/(pilot)/requests')}
+            >
               <MaterialIcons name="navigation" size={32} color={theme.primary} />
               <Text style={styles.quickActionText}>Navigate</Text>
             </Pressable>
-            <Pressable style={styles.quickAction}>
+            <Pressable
+              style={styles.quickAction}
+              onPress={() => alert('Scan OTP code from customer')}
+            >
               <MaterialIcons name="qr-code-scanner" size={32} color={theme.primary} />
               <Text style={styles.quickActionText}>Scan OTP</Text>
             </Pressable>
-            <Pressable style={styles.quickAction}>
+            <Pressable
+              style={styles.quickAction}
+              onPress={() => alert('Contact Support: +1-555-PILOT (74568)')}
+            >
               <MaterialIcons name="call" size={32} color={theme.primary} />
               <Text style={styles.quickActionText}>Contact</Text>
             </Pressable>
-            <Pressable style={styles.quickAction}>
+            <Pressable
+              style={styles.quickAction}
+              onPress={() => alert('Help Center\n\n1. How to accept orders\n2. Delivery guidelines\n3. OTP verification\n4. Payment issues')}
+            >
               <MaterialIcons name="help" size={32} color={theme.primary} />
               <Text style={styles.quickActionText}>Help</Text>
             </Pressable>
@@ -210,26 +237,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#FFF',
   },
-  toggleContainer: {
-    width: 48,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.3)',
-    padding: 2,
-    justifyContent: 'center',
-  },
-  toggle: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-  },
-  toggleThumb: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#FFF',
-  },
+
   statusTitle: {
     fontSize: 18,
     fontWeight: '700',

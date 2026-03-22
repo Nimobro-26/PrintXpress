@@ -1,5 +1,5 @@
 // Print Pilot Delivery History
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
@@ -8,10 +8,14 @@ export default function PilotHistoryScreen() {
   const insets = useSafeAreaInsets();
 
   const history = [
-    { id: 'ORD-99422', date: 'Oct 25, 2023', destination: '882 Tech Plaza', status: 'completed', amount: '$4.80' },
-    { id: 'ORD-88219', date: 'Oct 24, 2023', destination: '102 Industrial Way', status: 'completed', amount: '$3.20' },
-    { id: 'ORD-77510', date: 'Oct 22, 2023', destination: '45 Maple Avenue', status: 'cancelled', amount: '$0.00' },
+    { id: 'ORD-99422', date: 'Oct 25, 2023', destination: '882 Tech Plaza', status: 'completed', amount: '$4.80', pages: 42, time: '14:32' },
+    { id: 'ORD-88219', date: 'Oct 24, 2023', destination: '102 Industrial Way', status: 'completed', amount: '$3.20', pages: 12, time: '09:15' },
+    { id: 'ORD-77510', date: 'Oct 22, 2023', destination: '45 Maple Avenue', status: 'cancelled', amount: '$0.00', pages: 0, time: '--' },
   ];
+
+  const handleViewReceipt = (orderId: string) => {
+    alert(`Receipt for Order ${orderId}\n\nThis would open a detailed receipt view with pickup time, delivery time, customer signature, and payment details.`);
+  };
 
   return (
     <SafeAreaView edges={['top']} style={styles.container}>
@@ -36,7 +40,11 @@ export default function PilotHistoryScreen() {
       >
         <View style={styles.historyList}>
           {history.map((item) => (
-            <View key={item.id} style={styles.historyCard}>
+            <Pressable
+              key={item.id}
+              style={styles.historyCard}
+              onPress={() => handleViewReceipt(item.id)}
+            >
               <View style={styles.cardHeader}>
                 <View style={styles.iconContainer}>
                   <MaterialIcons 
@@ -70,13 +78,28 @@ export default function PilotHistoryScreen() {
                   <Text style={styles.detailValue}>{item.destination}</Text>
                 </View>
                 {item.status === 'completed' && (
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>Earned</Text>
-                    <Text style={styles.detailValue}>{item.amount}</Text>
-                  </View>
+                  <>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>Pages</Text>
+                      <Text style={styles.detailValue}>{item.pages}</Text>
+                    </View>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>Delivery Time</Text>
+                      <Text style={styles.detailValue}>{item.time}</Text>
+                    </View>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>Earned</Text>
+                      <Text style={[styles.detailValue, styles.earningValue]}>{item.amount}</Text>
+                    </View>
+                  </>
                 )}
               </View>
-            </View>
+
+              <View style={styles.cardFooter}>
+                <MaterialIcons name="receipt-long" size={16} color={theme.primary} />
+                <Text style={styles.receiptText}>Tap to view receipt</Text>
+              </View>
+            </Pressable>
           ))}
         </View>
       </ScrollView>
@@ -203,5 +226,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: theme.textPrimary,
+  },
+  earningValue: {
+    color: theme.success,
+  },
+  cardFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: theme.border,
+  },
+  receiptText: {
+    fontSize: 12,
+    color: theme.primary,
+    fontWeight: '600',
   },
 });
