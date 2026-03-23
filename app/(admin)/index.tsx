@@ -1,5 +1,5 @@
 // Admin Dashboard - System Overview
-import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ScrollView, Alert, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -9,6 +9,80 @@ import { theme } from '../../constants/theme';
 export default function AdminDashboardScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+
+  const handleAddPrinter = () => {
+    if (Platform.OS === 'web') {
+      const serialNumber = prompt('Enter Printer Serial Number:');
+      if (!serialNumber) return;
+      const location = prompt('Enter Printer Location:');
+      if (!location) return;
+      const model = prompt('Enter Printer Model:');
+      if (!model) return;
+      alert(`✓ Printer Added Successfully!\n\nSerial: ${serialNumber}\nLocation: ${location}\nModel: ${model}\n\nThe printer has been added to the network and is now ready for configuration.`);
+    } else {
+      Alert.alert(
+        'Add New Printer',
+        'Choose a method to add printer:',
+        [
+          {
+            text: 'Scan QR Code',
+            onPress: () => Alert.alert('QR Scanner', 'QR code scanner would open here.\n\nScan the printer\'s QR code to automatically configure serial number, model, and network settings.')
+          },
+          {
+            text: 'Manual Entry',
+            onPress: () => Alert.alert('Manual Entry', 'Serial Number: ________\nLocation: ________\nModel: ________\n\nIn production, this would open a form to enter printer details.')
+          },
+          { text: 'Cancel', style: 'cancel' }
+        ]
+      );
+    }
+  };
+
+  const handleBroadcastAlert = () => {
+    if (Platform.OS === 'web') {
+      const message = prompt('Enter broadcast message:');
+      if (!message) return;
+      const confirmed = window.confirm(`Send this message to all printers and agents?\n\n"${message}"`);
+      if (confirmed) {
+        alert('✓ Broadcast Sent!\n\nYour message has been delivered to:\n• 1,284 Active Printers\n• 156 Online Agents\n\nTimestamp: ' + new Date().toLocaleString());
+      }
+    } else {
+      Alert.alert(
+        'Broadcast Alert',
+        'Select broadcast type:',
+        [
+          {
+            text: 'Maintenance Notice',
+            onPress: () => Alert.alert('Maintenance', 'Scheduled maintenance notification sent to all devices.\n\n"System maintenance scheduled for Sunday 3-5 AM. All services will be temporarily unavailable."')
+          },
+          {
+            text: 'System Update',
+            onPress: () => Alert.alert('Update', 'System update notification sent.\n\n"New software version 2.1.5 available. Update will be deployed during next maintenance window."')
+          },
+          {
+            text: 'Emergency Notice',
+            onPress: () => Alert.alert('Emergency', 'Emergency notification sent to all agents and printers.\n\n"URGENT: Immediate system alert requires attention."')
+          },
+          { text: 'Cancel', style: 'cancel' }
+        ]
+      );
+    }
+  };
+
+  const handleNotifications = () => {
+    if (Platform.OS === 'web') {
+      alert('Notifications (3)\n\n🟡 Printer PRT-112 low ink (2 mins ago)\n   Black: 12% | Color: 8%\n\n🔴 5 new pending orders (5 mins ago)\n   Require immediate assignment\n\n🔵 System update available (1 hour ago)\n   Version 2.1.5 ready to deploy');
+    } else {
+      Alert.alert(
+        'Notifications (3)',
+        '🟡 Printer PRT-112 low ink (2 mins ago)\n\n🔴 5 new pending orders (5 mins ago)\n\n🔵 System update available (1 hour ago)',
+        [
+          { text: 'View All', onPress: () => router.push('/notifications') },
+          { text: 'Dismiss' }
+        ]
+      );
+    }
+  };
 
   const metrics = [
     { label: 'Active Printers', value: '1,284', change: '+12%', icon: 'print', color: theme.primary },
@@ -27,7 +101,7 @@ export default function AdminDashboardScreen() {
         </View>
         <Pressable 
           style={styles.notificationButton}
-          onPress={() => alert('Notifications (3)\n\n• Printer PRT-112 low ink\n• 5 new pending orders\n• System update available')}
+          onPress={handleNotifications}
         >
           <MaterialIcons name="notifications" size={24} color={theme.textPrimary} />
           <View style={styles.badge} />
@@ -46,14 +120,14 @@ export default function AdminDashboardScreen() {
           <View style={styles.quickActions}>
             <Pressable 
               style={styles.actionButton}
-              onPress={() => alert('Add New Printer\n\nSerial Number: ________\nLocation: ________\nModel: ________\n\nScan QR code or enter manually.')}
+              onPress={handleAddPrinter}
             >
               <MaterialIcons name="add-circle" size={24} color={theme.primary} />
               <Text style={styles.actionText}>Add Printer</Text>
             </Pressable>
             <Pressable 
               style={[styles.actionButton, styles.actionButtonPrimary]}
-              onPress={() => alert('Broadcast Alert\n\nSend system-wide notification to all printers and agents.\n\nExamples:\n• Scheduled maintenance\n• System updates\n• Emergency notices')}
+              onPress={handleBroadcastAlert}
             >
               <MaterialIcons name="campaign" size={24} color="#FFF" />
               <Text style={[styles.actionText, styles.actionTextWhite]}>Broadcast Alert</Text>
