@@ -1,11 +1,57 @@
 // Admin Printers Management Screen
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Alert, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
 
 export default function AdminPrintersScreen() {
   const insets = useSafeAreaInsets();
+
+  const handleAddPrinter = () => {
+    if (Platform.OS === 'web') {
+      const method = window.confirm('Add New Printer\n\nClick OK to scan QR code, or Cancel to enter manually');
+      if (method) {
+        alert('📷 QR Code Scanner\n\nPosition the QR code within the camera frame. The printer details will be automatically detected and configured.\n\nSupported formats:\n• QR Code (recommended)\n• Barcode\n• NFC tag');
+      } else {
+        const serialNumber = prompt('Enter Printer Serial Number:');
+        if (!serialNumber) return;
+        const location = prompt('Enter Printer Location:');
+        if (!location) return;
+        const model = prompt('Enter Printer Model:', 'HP LaserJet Pro');
+        if (!model) return;
+        alert(`✓ Printer Added Successfully!\n\nSerial: ${serialNumber}\nLocation: ${location}\nModel: ${model}\n\nThe printer has been added to the network and is now ready for configuration. Network settings and permissions can be adjusted in the edit menu.`);
+      }
+    } else {
+      Alert.alert(
+        'Add New Printer',
+        'Choose a method to add printer:',
+        [
+          {
+            text: 'Scan QR Code',
+            onPress: () => Alert.alert(
+              '📷 QR Scanner',
+              'Position the QR code within the camera frame. The printer details will be automatically detected and configured.\n\nSupported formats:\n• QR Code (recommended)\n• Barcode\n• NFC tag'
+            )
+          },
+          {
+            text: 'Manual Entry',
+            onPress: () => Alert.alert(
+              'Manual Entry',
+              'Serial Number: ________\nLocation/Zone: ________\nModel: ________\nIP Address: __.__.__.___\n\nIn production, this would open a form to enter all printer configuration details including network settings, permissions, and maintenance schedule.'
+            )
+          },
+          {
+            text: 'Auto-Detect',
+            onPress: () => Alert.alert(
+              '🔍 Network Scan',
+              'Scanning local network for available printers...\n\nFound devices:\n• HP-PRO-A4 (192.168.1.105)\n• Canon-MX920 (192.168.1.108)\n• Brother-HL2340 (192.168.1.112)\n\nSelect a device to configure.'
+            )
+          },
+          { text: 'Cancel', style: 'cancel' }
+        ]
+      );
+    }
+  };
 
   const printers = [
     { id: 'PRT-001', location: 'Main Library', status: 'online' },
@@ -28,8 +74,11 @@ export default function AdminPrintersScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>Printer Fleet</Text>
         <Pressable 
-          style={styles.addButton}
-          onPress={() => alert('Add New Printer\n\nMethods:\n• Scan QR Code\n• Enter Serial Number\n• Auto-Detect Network\n\nRequired info:\n- Printer Model\n- Location/Zone\n- Network Config')}
+          style={({ pressed }) => [
+            styles.addButton,
+            pressed && { opacity: 0.8, transform: [{ scale: 0.95 }] }
+          ]}
+          onPress={handleAddPrinter}
         >
           <MaterialIcons name="add" size={24} color="#FFF" />
         </Pressable>
