@@ -26,7 +26,10 @@ export default function PilotDashboardScreen() {
           <Text style={styles.greeting}>Print Pilot</Text>
           <Text style={styles.title}>Welcome back, Alex</Text>
         </View>
-        <Pressable style={styles.avatarButton}>
+        <Pressable 
+          style={styles.avatarButton}
+          onPress={() => router.push('/(pilot)/profile')}
+        >
           <MaterialIcons name="person" size={24} color={theme.textSecondary} />
           <View style={styles.onlineIndicator} />
         </Pressable>
