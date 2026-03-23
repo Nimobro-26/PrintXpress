@@ -1,5 +1,5 @@
 // Admin Profile Screen
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Alert, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -22,22 +22,111 @@ export default function AdminProfileScreen() {
     }
   };
 
+  const showSecuritySettings = () => {
+    const lastLogin = new Date().toLocaleString();
+    const message = `Two-Factor Authentication: ✓ Enabled\nBiometric Login: ✓ Enabled\nFirewall Status: 🟢 Active\n\n═══ Session Management ═══\n• Auto-logout: 30 minutes\n• Max concurrent sessions: 3\n• Last login: ${lastLogin}\n\n═══ Access Control ═══\n• IP Whitelist: Enabled\n• Failed login attempts: 0/5\n• Password strength: Strong\n\n═══ Quick Actions ═══\n• Force logout all sessions\n• Reset 2FA device\n• Review access logs`;
+    
+    if (Platform.OS === 'web') {
+      alert('🔐 Security Settings\n\n' + message);
+    } else {
+      Alert.alert(
+        '🔐 Security Settings',
+        message,
+        [
+          { text: 'View Access Logs', onPress: () => Alert.alert('Access Logs', 'Viewing detailed access history...') },
+          { text: 'Close' }
+        ]
+      );
+    }
+  };
+
+  const showUserPermissions = () => {
+    const message = `═══ Role Hierarchy ═══\n\n🔴 Admin (Full Access)\n• System configuration\n• User management\n• Financial reports\n• Database access\n• All operations\n\n🟡 Print Pilot (Limited)\n• Accept/reject orders\n• Delivery tracking\n• Earnings view\n• Customer contact\n• Basic navigation\n\n🟢 User (Basic)\n• Upload documents\n• Track orders\n• View history\n• Payment methods\n• Profile settings\n\n═══ Active Users ═══\nAdmins: 3 | Pilots: 156 | Users: 12,480`;
+    
+    if (Platform.OS === 'web') {
+      alert('👥 User Permissions\n\n' + message);
+    } else {
+      Alert.alert(
+        '👥 User Permissions',
+        message,
+        [
+          { text: 'Manage Roles', onPress: () => Alert.alert('Role Management', 'Opening role configuration panel...') },
+          { text: 'Close' }
+        ]
+      );
+    }
+  };
+
+  const showAuditLogs = () => {
+    const now = new Date();
+    const logs = [
+      { time: new Date(now.getTime() - 0), action: 'Admin Sarah logged in', icon: '✓' },
+      { time: new Date(now.getTime() - 5 * 60000), action: 'Printer PRT-089 added', icon: '➕' },
+      { time: new Date(now.getTime() - 10 * 60000), action: 'System settings updated', icon: '⚙️' },
+      { time: new Date(now.getTime() - 15 * 60000), action: 'Agent permissions modified', icon: '🔐' },
+      { time: new Date(now.getTime() - 30 * 60000), action: 'Database backup completed', icon: '💾' },
+      { time: new Date(now.getTime() - 45 * 60000), action: 'Security scan passed', icon: '🛡️' },
+    ];
+    
+    const logText = logs.map(log => 
+      `${log.time.toLocaleTimeString()} ${log.icon}\n${log.action}`
+    ).join('\n\n');
+    
+    const message = `═══ Recent Activity ═══\n\n${logText}\n\n═══ Export Options ═══\n• Export as CSV\n• Export as PDF\n• Email report\n\nTotal events today: 1,284\nCritical alerts: 0`;
+    
+    if (Platform.OS === 'web') {
+      alert('📋 Audit Logs\n\n' + message);
+    } else {
+      Alert.alert(
+        '📋 Audit Logs',
+        message,
+        [
+          { text: 'Export CSV', onPress: () => Alert.alert('Export', 'Generating CSV report...') },
+          { text: 'View All', onPress: () => Alert.alert('All Logs', 'Opening full audit log viewer...') },
+          { text: 'Close' }
+        ]
+      );
+    }
+  };
+
+  const showSystemConfiguration = () => {
+    const message = `═══ Environment ═══\n• Status: 🟢 Production\n• API Version: 2.1.4\n• Database: PostgreSQL 14.2\n• Server: AWS us-east-1\n\n═══ Configuration ═══\n• Max file size: 50 MB\n• Session timeout: 30 min\n• Upload limit: 100/hour\n• Rate limit: 1000 req/min\n\n═══ Maintenance ═══\n• Backup schedule: Daily 2:00 AM\n• Maintenance window: Sun 3-5 AM\n• Auto-update: Enabled\n• Last deployment: ${new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toLocaleDateString()}\n\n═══ System Health ═══\n• CPU Usage: 42%\n• Memory: 68%\n• Disk Space: 74%\n• Active connections: 1,284`;
+    
+    if (Platform.OS === 'web') {
+      alert('⚙️ System Configuration\n\n' + message);
+    } else {
+      Alert.alert(
+        '⚙️ System Configuration',
+        message,
+        [
+          { text: 'Edit Config', onPress: () => Alert.alert('Configuration', 'Opening configuration editor...') },
+          { text: 'System Status', onPress: () => Alert.alert('Status', 'All systems operational ✓') },
+          { text: 'Close' }
+        ]
+      );
+    }
+  };
+
   const handleMenuPress = (item: any) => {
     switch (item.label) {
       case 'Security Settings':
-        alert(`Security Settings\n\nTwo-Factor Authentication: Enabled\nBiometric Login: Enabled\nFirewall Status: Active\n\nSession Management:\n• Auto-logout: 30 minutes\n• Max concurrent sessions: 3\n• Last login: ${new Date().toLocaleString()}`);
+        showSecuritySettings();
         break;
       case 'User Permissions':
-        alert('User Permissions\n\nRole-Based Access Control:\n\nAdmin (Full Access)\n• System configuration\n• User management\n• All reports\n\nPrint Pilot (Limited)\n• Accept/reject orders\n• Delivery tracking\n• Earnings view\n\nUser (Basic)\n• Upload documents\n• Track orders\n• View history');
+        showUserPermissions();
         break;
       case 'Audit Logs':
-        alert(`Audit Logs\n\nRecent Activity:\n\n${new Date().toLocaleTimeString()} - Admin Sarah logged in\n${new Date(Date.now() - 300000).toLocaleTimeString()} - Printer PRT-089 added\n${new Date(Date.now() - 600000).toLocaleTimeString()} - System settings updated\n${new Date(Date.now() - 900000).toLocaleTimeString()} - Agent permissions modified\n\nExport logs as CSV/PDF`);
+        showAuditLogs();
         break;
       case 'System Configuration':
-        alert('System Configuration\n\nEnvironment: Production\nAPI Version: 2.1.4\nDatabase: PostgreSQL 14.2\n\nSettings:\n• Max file size: 50MB\n• Session timeout: 30min\n• Backup schedule: Daily 2AM\n• Maintenance window: Sun 3-5AM');
+        showSystemConfiguration();
         break;
       default:
-        alert(item.label);
+        if (Platform.OS === 'web') {
+          alert(item.label);
+        } else {
+          Alert.alert(item.label, 'This feature will be available soon.');
+        }
     }
   };
 
@@ -256,6 +345,7 @@ const styles = StyleSheet.create({
     gap: 12,
     borderBottomWidth: 1,
     borderBottomColor: theme.border,
+    activeOpacity: 0.7,
   },
   menuIcon: {
     width: 44,
