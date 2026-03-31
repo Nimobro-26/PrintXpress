@@ -185,7 +185,7 @@ export default function AdminAgentsScreen() {
           <Text style={styles.subtitle}>{activeCount} active · {AGENTS.length} total</Text>
         </View>
         <Pressable
-          style={({ pressed }) => [styles.addButton, pressed && { opacity: 0.8, transform: [{ scale: 0.95 }] }]}
+          style={({ pressed }) => [styles.addButton, pressed && { opacity: 0.8 }]}
           onPress={handleAddAgent}
         >
           <MaterialIcons name="person-add" size={22} color="#FFF" />
@@ -302,7 +302,8 @@ export default function AdminAgentsScreen() {
                 {/* Actions */}
                 <View style={styles.actions}>
                   <Pressable
-                    style={({ pressed }) => [styles.btn, styles.btnSecondary, pressed && { opacity: 0.7 }]}
+                    style={[styles.btn, styles.btnSecondary]}
+                    android_ripple={{ color: `${theme.primary}20` }}
                     onPress={() => handleTrack(agent)}
                   >
                     <MaterialIcons name="my-location" size={16} color={theme.primary} />
@@ -310,12 +311,12 @@ export default function AdminAgentsScreen() {
                   </Pressable>
 
                   <Pressable
-                    style={({ pressed }) => [
+                    style={[
                       styles.btn,
                       styles.btnPrimary,
                       agent.status === 'offline' && styles.btnDisabled,
-                      pressed && { opacity: 0.7 },
                     ]}
+                    android_ripple={{ color: 'rgba(255,255,255,0.2)' }}
                     onPress={() => agent.status !== 'offline' && handleAssign(agent)}
                     disabled={agent.status === 'offline'}
                   >
@@ -326,7 +327,8 @@ export default function AdminAgentsScreen() {
                   </Pressable>
 
                   <Pressable
-                    style={({ pressed }) => [styles.btnIcon, pressed && { opacity: 0.7 }]}
+                    style={styles.btnIcon}
+                    android_ripple={{ color: '#FECACA' }}
                     onPress={() => handleRemove(agent)}
                   >
                     <MaterialIcons name="person-remove" size={18} color={theme.error} />

@@ -11,31 +11,7 @@ export default function AdminDashboardScreen() {
   const insets = useSafeAreaInsets();
 
   const handleAddPrinter = () => {
-    if (Platform.OS === 'web') {
-      const serialNumber = prompt('Enter Printer Serial Number:');
-      if (!serialNumber) return;
-      const location = prompt('Enter Printer Location:');
-      if (!location) return;
-      const model = prompt('Enter Printer Model:');
-      if (!model) return;
-      alert(`✓ Printer Added Successfully!\n\nSerial: ${serialNumber}\nLocation: ${location}\nModel: ${model}\n\nThe printer has been added to the network and is now ready for configuration.`);
-    } else {
-      Alert.alert(
-        'Add New Printer',
-        'Choose a method to add printer:',
-        [
-          {
-            text: 'Scan QR Code',
-            onPress: () => Alert.alert('QR Scanner', 'QR code scanner would open here.\n\nScan the printer\'s QR code to automatically configure serial number, model, and network settings.')
-          },
-          {
-            text: 'Manual Entry',
-            onPress: () => Alert.alert('Manual Entry', 'Serial Number: ________\nLocation: ________\nModel: ________\n\nIn production, this would open a form to enter printer details.')
-          },
-          { text: 'Cancel', style: 'cancel' }
-        ]
-      );
-    }
+    router.push('/admin-add-printer');
   };
 
   const handleBroadcastAlert = () => {
