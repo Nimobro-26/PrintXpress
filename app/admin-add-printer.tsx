@@ -16,6 +16,8 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { MaterialIcons } from '@expo/vector-icons';
 import { theme } from '../constants/theme';
 
+const ADMIN = '#7C3AED';
+const ADMIN_DARK = '#5B21B6';
 const ZONES = ['Zone 1 - Central', 'Zone 2 - Core', 'Zone 3 - Alpha', 'Zone 5 - Beta', 'Zone 7 - Delta'];
 const MODELS = ['HP LaserJet Pro M404n', 'Canon imageCLASS LBP6030', 'Brother HL-L2340D', 'Epson EcoTank L3250', 'Samsung Xpress M2020'];
 
@@ -97,7 +99,7 @@ export default function AdminAddPrinterScreen() {
           <View style={styles.methodRow}>
             <Pressable style={styles.methodCard} onPress={handleScanQR}>
               <View style={styles.methodIconWrap}>
-                <MaterialIcons name="qr-code-scanner" size={28} color={theme.primary} />
+                <MaterialIcons name="qr-code-scanner" size={28} color={ADMIN} />
               </View>
               <Text style={styles.methodTitle}>Scan QR</Text>
               <Text style={styles.methodSub}>Auto-fill via QR</Text>
@@ -109,7 +111,7 @@ export default function AdminAddPrinterScreen() {
               <View style={[styles.methodIconWrap, styles.methodIconActive]}>
                 <MaterialIcons name="edit" size={28} color="#FFF" />
               </View>
-              <Text style={[styles.methodTitle, { color: theme.primary }]}>Manual Entry</Text>
+              <Text style={[styles.methodTitle, { color: ADMIN }]}>Manual Entry</Text>
               <Text style={styles.methodSub}>Fill in details</Text>
             </Pressable>
           </View>
@@ -132,7 +134,7 @@ export default function AdminAddPrinterScreen() {
                   returnKeyType="next"
                 />
                 <Pressable onPress={handleScanQR}>
-                  <MaterialIcons name="qr-code-scanner" size={20} color={theme.primary} />
+                  <MaterialIcons name="qr-code-scanner" size={20} color={ADMIN} />
                 </Pressable>
               </View>
               {errors.serialNumber ? <Text style={styles.errorText}>{errors.serialNumber}</Text> : null}
@@ -275,7 +277,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: theme.backgroundSecondary,
+    backgroundColor: `${ADMIN}10`,
   },
   headerTitle: { fontSize: 18, fontWeight: '700', color: theme.textPrimary },
 
@@ -291,19 +293,19 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   methodCardActive: {
-    borderColor: theme.primary,
-    backgroundColor: `${theme.primary}08`,
+    borderColor: ADMIN,
+    backgroundColor: `${ADMIN}08`,
   },
   methodIconWrap: {
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: `${theme.primary}12`,
+    backgroundColor: `${ADMIN}12`,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 4,
   },
-  methodIconActive: { backgroundColor: theme.primary },
+  methodIconActive: { backgroundColor: ADMIN },
   methodTitle: { fontSize: 14, fontWeight: '700', color: theme.textPrimary },
   methodSub: { fontSize: 11, color: theme.textTertiary },
 
@@ -318,7 +320,7 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 12,
     fontWeight: '700',
-    color: theme.primary,
+    color: ADMIN,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
     marginBottom: 16,
@@ -356,7 +358,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.backgroundSecondary,
     maxWidth: '80%',
   },
-  chipActive: { backgroundColor: theme.primary, borderColor: theme.primary },
+  chipActive: { backgroundColor: ADMIN, borderColor: ADMIN },
   chipText: { fontSize: 12, fontWeight: '600', color: theme.textSecondary },
   chipTextActive: { color: '#FFF' },
 
@@ -365,7 +367,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    backgroundColor: theme.primary,
+    backgroundColor: ADMIN,
     paddingVertical: 16,
     borderRadius: theme.borderRadius.large,
     marginTop: 8,
