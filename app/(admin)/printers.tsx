@@ -4,6 +4,8 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { MaterialIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
 
+const ADMIN = '#7C3AED';
+
 export default function AdminPrintersScreen() {
   const insets = useSafeAreaInsets();
 
@@ -162,7 +164,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: theme.primary,
+    backgroundColor: ADMIN,
     alignItems: 'center',
     justifyContent: 'center',
     ...theme.shadow.medium,

@@ -6,6 +6,9 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '../../constants/theme';
 
+const ADMIN = '#7C3AED';
+const ADMIN_DARK = '#5B21B6';
+
 export default function AdminDashboardScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -61,10 +64,10 @@ export default function AdminDashboardScreen() {
   };
 
   const metrics = [
-    { label: 'Active Printers', value: '1,284', change: '+12%', icon: 'print', color: theme.primary },
+    { label: 'Active Printers', value: '1,284', change: '+12%', icon: 'print', color: ADMIN },
     { label: 'Pending Orders', value: '42', change: 'High', icon: 'pending-actions', color: theme.warning },
     { label: 'Delivery Orders', value: '318', change: 'On Time', icon: 'local-shipping', color: theme.success },
-    { label: 'Online Agents', value: '156', change: 'Stable', icon: 'support-agent', color: theme.secondary },
+    { label: 'Online Agents', value: '156', change: 'Stable', icon: 'support-agent', color: '#A78BFA' },
   ];
 
   return (
@@ -75,7 +78,7 @@ export default function AdminDashboardScreen() {
           <Text style={styles.greeting}>Admin Console</Text>
           <Text style={styles.title}>Print-Xpress</Text>
         </View>
-        <Pressable 
+        <Pressable
           style={styles.notificationButton}
           onPress={handleNotifications}
         >
@@ -94,14 +97,14 @@ export default function AdminDashboardScreen() {
         {/* Quick Actions */}
         <View style={styles.section}>
           <View style={styles.quickActions}>
-            <Pressable 
+            <Pressable
               style={styles.actionButton}
               onPress={handleAddPrinter}
             >
-              <MaterialIcons name="add-circle" size={24} color={theme.primary} />
+              <MaterialIcons name="add-circle" size={24} color={ADMIN} />
               <Text style={styles.actionText}>Add Printer</Text>
             </Pressable>
-            <Pressable 
+            <Pressable
               style={[styles.actionButton, styles.actionButtonPrimary]}
               onPress={handleBroadcastAlert}
             >
@@ -136,7 +139,7 @@ export default function AdminDashboardScreen() {
         <View style={styles.section}>
           <Pressable style={styles.statusCard}>
             <LinearGradient
-              colors={[theme.primary, theme.primaryDark]}
+              colors={[ADMIN, ADMIN_DARK]}
               style={styles.statusGradient}
             >
               <View style={styles.statusContent}>
@@ -168,7 +171,8 @@ export default function AdminDashboardScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Recent Activity</Text>
-            <Pressable onPress={() => alert('Activity Logs\n\nAll system events:\n• Printer status changes\n• Agent activity\n• System updates\n• Order completions\n• Error notifications\n\nView detailed logs in System Monitor.')}>              <Text style={styles.viewAll}>View All</Text>
+            <Pressable onPress={() => alert('Activity Logs\n\nAll system events:\n• Printer status changes\n• Agent activity\n• System updates\n• Order completions\n• Error notifications\n\nView detailed logs in System Monitor.')}>
+              <Text style={styles.viewAll}>View All</Text>
             </Pressable>
           </View>
 
@@ -176,7 +180,7 @@ export default function AdminDashboardScreen() {
             {[
               { icon: 'check-circle', text: 'Printer P-882 Online', time: '2 mins ago', color: theme.success },
               { icon: 'warning', text: 'Ink Level Critical', time: '14 mins ago', color: theme.error },
-              { icon: 'update', text: 'System Update Complete', time: '1 hr ago', color: theme.primary },
+              { icon: 'update', text: 'System Update Complete', time: '1 hr ago', color: ADMIN },
             ].map((activity, index) => (
               <View key={index} style={styles.activityItem}>
                 <View style={[styles.activityIcon, { backgroundColor: `${activity.color}15` }]}>
@@ -212,7 +216,7 @@ const styles = StyleSheet.create({
   greeting: {
     fontSize: 12,
     fontWeight: '600',
-    color: theme.primary,
+    color: ADMIN,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
@@ -255,7 +259,7 @@ const styles = StyleSheet.create({
   viewAll: {
     fontSize: 14,
     fontWeight: '600',
-    color: theme.primary,
+    color: ADMIN,
   },
   quickActions: {
     flexDirection: 'row',
@@ -274,8 +278,8 @@ const styles = StyleSheet.create({
     borderColor: theme.border,
   },
   actionButtonPrimary: {
-    backgroundColor: theme.primary,
-    borderColor: theme.primary,
+    backgroundColor: ADMIN,
+    borderColor: ADMIN,
   },
   actionText: {
     fontSize: 14,

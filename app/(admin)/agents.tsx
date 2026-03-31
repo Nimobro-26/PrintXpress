@@ -5,6 +5,8 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { MaterialIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
 
+const ADMIN = '#7C3AED';
+
 const AGENTS = [
   {
     id: 'PLT-001',
@@ -306,7 +308,7 @@ export default function AdminAgentsScreen() {
                     android_ripple={{ color: `${theme.primary}20` }}
                     onPress={() => handleTrack(agent)}
                   >
-                    <MaterialIcons name="my-location" size={16} color={theme.primary} />
+                    <MaterialIcons name="my-location" size={16} color={ADMIN} />
                     <Text style={styles.btnSecondaryText}>Track</Text>
                   </Pressable>
 
@@ -361,7 +363,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: theme.primary,
+    backgroundColor: ADMIN,
     alignItems: 'center',
     justifyContent: 'center',
     ...theme.shadow.medium,
@@ -391,15 +393,15 @@ const styles = StyleSheet.create({
   summaryChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
     borderRadius: theme.borderRadius.full,
     borderWidth: 1,
     backgroundColor: '#FFF',
   },
-  summaryDot: { width: 7, height: 7, borderRadius: 4 },
-  summaryLabel: { fontSize: 11, fontWeight: '700' },
+  summaryDot: { width: 6, height: 6, borderRadius: 3 },
+  summaryLabel: { fontSize: 10, fontWeight: '700' },
 
   filtersScroll: { marginTop: 10, maxHeight: 44 },
   filtersContent: { paddingHorizontal: 20, gap: 8, paddingRight: 20, alignItems: 'center', height: 44 },
@@ -415,8 +417,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   filterChipActive: {
-    backgroundColor: theme.primary,
-    borderColor: theme.primary,
+    backgroundColor: ADMIN,
+    borderColor: ADMIN,
   },
   filterChipText: { fontSize: 12, fontWeight: '600', color: theme.textSecondary, lineHeight: 16 },
   filterChipTextActive: { color: '#FFF' },
@@ -493,7 +495,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: theme.borderRadius.medium,
   },
-  btnPrimary: { flex: 1, backgroundColor: theme.primary },
+  btnPrimary: { flex: 1, backgroundColor: ADMIN },
   btnSecondary: {
     flex: 1,
     backgroundColor: theme.backgroundSecondary,
@@ -502,7 +504,7 @@ const styles = StyleSheet.create({
   },
   btnDisabled: { backgroundColor: theme.backgroundSecondary },
   btnPrimaryText: { fontSize: 13, fontWeight: '700', color: '#FFF' },
-  btnSecondaryText: { fontSize: 13, fontWeight: '700', color: theme.primary },
+  btnSecondaryText: { fontSize: 13, fontWeight: '700', color: ADMIN },
 
   btnIcon: {
     width: 44,

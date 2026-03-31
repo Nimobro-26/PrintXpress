@@ -29,7 +29,7 @@ export default function AdminLayout() {
           borderTopColor: theme.border,
         },
         tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
-        tabBarActiveTintColor: theme.primary,
+        tabBarActiveTintColor: '#7C3AED',
         tabBarInactiveTintColor: theme.textTertiary,
       }}
     >

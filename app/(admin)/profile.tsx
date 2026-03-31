@@ -5,6 +5,9 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '../../constants/theme';
+
+const ADMIN = '#7C3AED';
+const ADMIN_DARK = '#5B21B6';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function AdminProfileScreen() {
@@ -178,7 +181,7 @@ export default function AdminProfileScreen() {
         <View style={styles.section}>
           <Pressable style={styles.infoCard}>
             <LinearGradient
-              colors={[theme.primary, theme.primaryDark]}
+              colors={[ADMIN, ADMIN_DARK]}
               style={styles.infoGradient}
             >
               <Text style={styles.infoLabel}>Admin ID</Text>
@@ -241,7 +244,7 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 48,
-    backgroundColor: theme.primary,
+    backgroundColor: ADMIN,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
@@ -296,7 +299,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 20,
     fontWeight: '700',
-    color: theme.primary,
+    color: ADMIN,
     marginBottom: 4,
   },
   statLabel: {

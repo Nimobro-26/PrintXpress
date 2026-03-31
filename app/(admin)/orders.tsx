@@ -5,6 +5,8 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { MaterialIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
 
+const ADMIN = '#7C3AED';
+
 const ALL_ORDERS = [
   { id: 'PX-9921', customer: 'Marcus Thorne', status: 'pending', pages: 42, type: 'Delivery', agent: 'Unassigned', location: 'Main Library', printer: 'PRT-001' },
   { id: 'PX-9918', customer: 'Sarah Jenkins', status: 'printing', pages: 12, type: 'ATM Pickup', agent: 'Auto', location: 'South Wing Hub', printer: 'PRT-042' },
@@ -29,8 +31,8 @@ export default function AdminOrdersScreen() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return theme.warning;
-      case 'printing': return theme.primary;
+      case 'pending': return '#F59E0B';
+      case 'printing': return ADMIN;
       case 'delivery': return theme.success;
       case 'completed': return theme.textSecondary;
       default: return theme.textSecondary;
@@ -196,11 +198,11 @@ export default function AdminOrdersScreen() {
 
                 <View style={styles.orderMeta}>
                   <View style={styles.metaItem}>
-                    <MaterialIcons name="description" size={16} color={theme.primary} />
+                    <MaterialIcons name="description" size={16} color={ADMIN} />
                     <Text style={styles.metaText}>{order.pages} Pages</Text>
                   </View>
                   <View style={styles.metaItem}>
-                    <MaterialIcons name="print" size={16} color={theme.primary} />
+                    <MaterialIcons name="print" size={16} color={ADMIN} />
                     <Text style={styles.metaText}>{order.printer}</Text>
                   </View>
                 </View>
@@ -267,9 +269,9 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     paddingHorizontal: 16,
     borderRadius: theme.borderRadius.full,
-    backgroundColor: theme.primary,
+    backgroundColor: ADMIN,
     borderWidth: 1,
-    borderColor: theme.primary,
+    borderColor: ADMIN,
   },
   filterText: {
     fontSize: 13,
@@ -369,7 +371,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    backgroundColor: theme.primary,
+    backgroundColor: ADMIN,
     paddingVertical: 11,
     borderRadius: theme.borderRadius.medium,
   },
