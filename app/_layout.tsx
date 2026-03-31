@@ -31,6 +31,7 @@ export default function RootLayout() {
           <Stack.Screen name="delivery-tracking" />
           <Stack.Screen name="address-selection" />
           <Stack.Screen name="admin-add-printer" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="(pilot)/active-workflow" />
         </Stack>
       </PrintProvider>
     </AuthProvider>

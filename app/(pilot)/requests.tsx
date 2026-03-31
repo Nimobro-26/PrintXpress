@@ -2,10 +2,12 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Alert, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
 
 export default function PilotRequestsScreen() {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const [requests, setRequests] = useState([
     { id: 'PX-1024', priority: 'urgent', pickup: 'Downtown ATM', delivery: '123 College Ave', distance: 1.2, pages: 12, time: 15 },
@@ -13,17 +15,16 @@ export default function PilotRequestsScreen() {
     { id: 'PX-1026', priority: 'batch', pickup: 'Campus Library', delivery: 'Science Hall Annex', distance: 0.5, pages: 120, time: 8 },
   ]);
 
-  const handleAcceptOrder = (requestId: string) => {
-    const message = `Order ${requestId} accepted!\n\nNavigate to pickup location and collect the printed documents. Customer will receive a notification.`;
-    if (Platform.OS === 'web') {
-      alert(message);
-    } else {
-      Alert.alert('Order Accepted', message, [
-        { text: 'Start Navigation', onPress: () => console.log('Navigate to pickup') },
-        { text: 'OK' },
-      ]);
-    }
-    setRequests(prev => prev.filter(r => r.id !== requestId));
+  const handleAcceptOrder = (request: typeof requests[0]) => {
+    setRequests(prev => prev.filter(r => r.id !== request.id));
+    router.push({
+      pathname: '/(pilot)/active-workflow',
+      params: {
+        orderId: request.id,
+        pickup: request.pickup,
+        delivery: request.delivery,
+      },
+    });
   };
 
   const handleRejectOrder = (requestId: string) => {
@@ -122,7 +123,7 @@ export default function PilotRequestsScreen() {
                 <View style={styles.actions}>
                   <Pressable
                     style={styles.acceptButton}
-                    onPress={() => handleAcceptOrder(request.id)}
+                    onPress={() => handleAcceptOrder(request)}
                   >
                     <Text style={styles.acceptButtonText}>Accept Order</Text>
                   </Pressable>
